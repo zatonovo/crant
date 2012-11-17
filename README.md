@@ -1,4 +1,58 @@
 crant
 =====
+The crant toolkit is designed to streamline the package development process.
 
-Tools for building R packages for CRAN
+
+Workflow
+========
+
+Build R, set up package libraries, build your own packages.
+
+Build R
+-------
+  export PATH=$PATH:path/to/crant
+  buildenv.sh -u
+
+If the OS is brand new, then include the -d option to install dependencies.
+These include packages like make, gcc, gfortran, java, etc.
+
+  buildenv.sh -du
+
+The end result is that you will have 3 installations of R built from source
+that correspond to the latest minor release (e.g. 2.15), the latest patch
+release (e.g. 2.15.2), and the current development source (R-devel).
+
+As the source changes over time, you can re-build the R versions to stay
+current. The defaults will change by the maintainer to be current with the
+latest point and patch releases.
+
+Installing libraries
+--------------------
+Libraries need to be built once R has been built successfully. These are
+typically the package dependencies you have. At a minimum you will probably
+want the unit testing packages since these are usually listed as 'suggested',
+so will not be downloaded automatically.
+
+  setuplib.sh -R path/to/R RUnit testthat
+
+Building your package
+---------------------
+The rant script will build and check your package. If your source is within a
+source repository, rant will attempt to export the latest committed version
+to a separate directory (export). The only required variable is the package
+name, although typically you will also want to provide the version number.
+
+  rant -v 1.0.0 your.package
+
+To ignore the repository version and pull the latest working copy use the -S
+option.
+
+If testing your package just before uploading to CRAN, it is wise to test 
+against the three versions of R you built before. Use the same -R option as
+before.
+
+  rant -v 1.0.0 -R path/to/R your.package
+
+Note that rant will automatically set the version and date in the DESCRIPTION
+and package.Rd files for you. This only works if you use placeholders in these
+files.

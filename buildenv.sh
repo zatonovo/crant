@@ -12,7 +12,7 @@ get_branch()
   if [ "$branch" = "release" ]
   then
     # This is a x.y.0 release
-    src=$REPOS/R/tags/R-${release_ver}-${patch_ver}
+    src=$REPOS/tags/R-${release_ver}-${patch_ver}
   elif [ "$branch" = "patch" ]
   then
     # Current release branch aka patch x.y.z
@@ -25,7 +25,7 @@ get_branch()
   echo $src
 }
 
-do_setup()
+do_deps()
 {
   apt-get install gcc
   apt-get install g++
@@ -35,6 +35,7 @@ do_setup()
   apt-get install default-jdk
   apt-get install libreadline6-dev
   apt-get install make
+  apt-get install subversion
 }
 
 do_build()
@@ -44,14 +45,24 @@ do_build()
   tools/rsync-recommended
   ./configure --with-x=no
   make
+  mkdir site-library 2> /dev/null
 }
 
-get_sources()
+do_update()
 {
+  cd $RTOP
   for branch in release patch devel
   do
-    src=$(get_branch $branch)
-    svn co $src $branch
+    if [ -f "$branch" ]
+    then
+      echo "Updating sources for $branch"
+      cd $RTOP/$branch
+      svn up
+    else
+      echo "Downloading sources for $branch"
+      src=$(get_branch $branch)
+      svn co $src $branch
+    fi
   done
 }
 
@@ -61,18 +72,21 @@ get_package()
   name=$1
 }
 
-while getopts "su" opt 
+while getopts "duB" opt 
 do
   case $opt in
-  s) setup=yes;;
+  d) deps=yes;;
   u) update=yes;;
+  B) no_build=yes;;
   esac
 done
 
-[ -n "$setup" ] && do_setup
-[ -n "$update" ] && get_sources
+[ -n "$deps" ] && do_deps
+[ -n "$update" ] && do_update
+[ -n "$no_build" ] && exit 0
 
 for build in release patch devel
 do
+  echo "Building $build"
   do_build $build
 done

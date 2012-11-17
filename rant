@@ -9,9 +9,9 @@ host_windows=192.168.1.46
 
 do_build()
 {
-  R CMD build $binary $package
-  [ -z "$nocheck" ] && R CMD check $package
-  [ -n "$docran" ] && R CMD check --as-cran $package_src
+  $R CMD build $binary $package
+  [ -z "$nocheck" ] && $R CMD check $package
+  [ -n "$docran" ] && $R CMD check --as-cran $package_src
 
 
   if [[ -z "$binary" && -n "$windows" ]]
@@ -29,7 +29,7 @@ do_build()
 do_export()
 {
   # No need for binary here, since windows packages are built manually
-  R CMD build $resavedata $package
+  $R CMD build $resavedata $package
   # The built source package is all they want here
   #tar jcf ${package}_${version}.src.tbz2 $package
 
@@ -68,7 +68,7 @@ do_repo_export()
     git archive master | tar -x -C ../export/$package
     cd ..
   else
-    cp -R $package export/
+    cp -$R $package export/
   fi
   cd export
 }
@@ -90,11 +90,13 @@ do_bind_package()
   rm $packagerd.template
 }
 
-while getopts "v:d:DCrSiebwh:?" opt
+R=R
+while getopts "v:d:R:DCrSiebwh:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
   d) builddate=$OPTARG;;
+  R) R=$OPTARG;;
   D) resavedata=--resave-data;;
   C) nocheck=1;;
   r) docran=1; nocheck=1;;
@@ -136,7 +138,7 @@ cd -
 if [ -n "$doinstall" ]
 then
   echo "Installing package $package"
-  R CMD INSTALL export/$package_src
+  $R CMD INSTALL export/$package_src
 fi
 
 echo "Done with package $package"
