@@ -1,0 +1,142 @@
+#!/bin/bash
+# Build on all platforms and verify everything works properly. This is basically
+# like doexport with a few additional commands.
+# TODO: Add submit to CRAN
+# ftp://cran.r-project.org/incoming and send email to cran@r-project.org
+version=1.0.0
+builddate=$(date +%F)
+host_windows=192.168.1.46
+
+do_build()
+{
+  R CMD build $binary $package
+  [ -z "$nocheck" ] && R CMD check $package
+  [ -n "$docran" ] && R CMD check --as-cran $package_src
+
+
+  if [[ -z "$binary" && -n "$windows" ]]
+  then
+    # Try building on Windows if not on Windows (is that contradictory ;)
+    echo "Attempting to build Windows package"
+    set -x
+    cmd_env='source ~/.bashrc; cd $WORKSPACE'
+    cmd_rant="rant -v $version -d $builddate -b $package"
+    ssh $host_windows "$cmd_env; $cmd_rant"
+    set +x
+  fi
+}
+
+do_export()
+{
+  # No need for binary here, since windows packages are built manually
+  R CMD build $resavedata $package
+  # The built source package is all they want here
+  #tar jcf ${package}_${version}.src.tbz2 $package
+
+  # Upload to CRAN
+  #TODO: Do this
+}
+
+set_windows_path()
+{
+  # This can be cleaned up more
+  if [ -z "$RANT" ]
+  then
+    RANT="/c/Program Files (x86)/MiKTeX 2.7/miktex/bin:/c/Rtools/bin:/c/Rtools/perl/bin:/c/Rtools/MinGW/bin"
+    export PATH=$RANT:$PATH
+  fi
+  echo "Using PATH=$PATH"
+}
+
+# Export to the export directory
+do_repo_export()
+{
+  rm -rf export/$package > /dev/null 2>&1
+  mkdir export >> /dev/null 2>&1
+  if [ -n "$noscm" ]
+  then
+    cp -R $package export/
+    rm -rf export/$package/.svn >> /dev/null 2>&1
+    rm -rf export/$package/.git >> /dev/null 2>&1
+  elif [ -d "$package/.svn" ]
+  then
+    svn export $package export/$package
+  elif [ -d "$package/.git" ]
+  then
+    mkdir -p export/$package
+    cd $package
+    git archive master | tar -x -C ../export/$package
+    cd ..
+  else
+    cp -R $package export/
+  fi
+  cd export
+}
+
+
+do_bind_package()
+{
+  # Populate the DESCRIPTION file
+  mv $package/DESCRIPTION $package/DESCRIPTION.template
+  sed -e "s,{version},$version," -e "s,{date},$builddate," \
+    $package/DESCRIPTION.template > $package/DESCRIPTION
+  rm $package/DESCRIPTION.template
+
+  # Populate the package Rd file
+  packagerd=$package/man/$package-package.Rd
+  mv $packagerd $packagerd.template
+  sed -e "s,{version},$version," -e "s,{date},$builddate," \
+    $packagerd.template > $packagerd
+  rm $packagerd.template
+}
+
+while getopts "v:d:DCrSiebwh:?" opt
+do
+  case $opt in
+  v) version=$OPTARG;;
+  d) builddate=$OPTARG;;
+  D) resavedata=--resave-data;;
+  C) nocheck=1;;
+  r) docran=1; nocheck=1;;
+  S) noscm=1;;
+  i) doinstall=1;;
+  e) doexport=1;;
+  b) binary="--binary";; # For windows
+  w) windows=1;;
+  h) windows=1; host_windows=$OPTARG;;
+  ?) printf "Usage: %s: [-e] [-v version] [-d date] package\n" $0
+     exit 2;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+package=$1
+package_src=${package}_${version}.tar.gz
+[ -z "$package" ] && exit 2
+
+[ -z "$doexport" ] && printf "Running build chain on %s\n" $package
+[ -n "$doexport" ] && printf "Running export on %s\n" $package
+
+# In windows, get the latest source
+if [ -n "$binary" ]
+then
+  set_windows_path
+  cd $package
+  svn update
+  cd -
+fi
+
+do_repo_export
+do_bind_package
+
+[ -z "$doexport" ] && do_build
+[ -n "$doexport" ] && do_export
+cd -
+
+if [ -n "$doinstall" ]
+then
+  echo "Installing package $package"
+  R CMD INSTALL export/$package_src
+fi
+
+echo "Done with package $package"
