@@ -64,8 +64,7 @@ Note that rant will automatically set the version and date in the DESCRIPTION
 and package.Rd files for you. This only works if you use placeholders in these
 files.
 
-Other Options
-.............
--S - Build against uncommitted source 
--i - Install the package after building
--r - Run the CRAN checks
+*Other Options*
++ -S - Build against uncommitted source 
++ -i - Install the package after building
++ -r - Run the CRAN checks
