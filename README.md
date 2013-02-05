@@ -10,13 +10,17 @@ Build R, set up package libraries, build your own packages.
 
 Build R
 -------
-  export PATH=$PATH:path/to/crant
-  buildenv.sh -u
+Make sure crant is in your path and then build your instances of R. If you
+already have an R instance and don't want to build from source, you can skip
+this step (although you still need to have crant in your path).
+
+    export PATH=$PATH:path/to/crant
+    buildenv.sh -u
 
 If the OS is brand new, then include the -d option to install dependencies.
 These include packages like make, gcc, gfortran, java, etc.
 
-  buildenv.sh -du
+    buildenv.sh -du
 
 The end result is that you will have 3 installations of R built from source
 that correspond to the latest minor release (e.g. 2.15), the latest patch
@@ -33,7 +37,10 @@ typically the package dependencies you have. At a minimum you will probably
 want the unit testing packages since these are usually listed as 'suggested',
 so will not be downloaded automatically.
 
-  setuplib.sh -R path/to/R RUnit testthat
+    setuplib.sh -R path/to/R RUnit testthat
+
+Note that if your R instance is in your path, you do not need to manually
+set the path to the R executable.
 
 Building your package
 ---------------------
@@ -42,7 +49,7 @@ source repository, rant will attempt to export the latest committed version
 to a separate directory (export). The only required variable is the package
 name, although typically you will also want to provide the version number.
 
-  rant -v 1.0.0 your.package
+    rant -v 1.0.0 your.package
 
 To ignore the repository version and pull the latest working copy use the -S
 option.
@@ -51,8 +58,14 @@ If testing your package just before uploading to CRAN, it is wise to test
 against the three versions of R you built before. Use the same -R option as
 before.
 
-  rant -v 1.0.0 -R path/to/R your.package
+    rant -v 1.0.0 -R path/to/R your.package
 
 Note that rant will automatically set the version and date in the DESCRIPTION
 and package.Rd files for you. This only works if you use placeholders in these
 files.
+
+Other Options
+.............
+-S - Build against uncommitted source 
+-i - Install the package after building
+-r - Run the CRAN checks
