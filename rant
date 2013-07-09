@@ -9,7 +9,6 @@ host_windows=192.168.1.46
 
 do_build()
 {
-  [ -n "$roxygen" ] && echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
   $R CMD build $binary $package
   [ -z "$nocheck" ] && $R CMD check $package
   [ -n "$docran" ] && $R CMD check --as-cran $package_src
@@ -117,6 +116,12 @@ shift $(($OPTIND - 1))
 package=$1
 package_src=${package}_${version}.tar.gz
 [ -z "$package" ] && exit 2
+
+if [ -n "$roxygen" ]; then
+  printf "Roxygenizing %s\n" $package
+  echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
+  exit 0
+fi
 
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package
 [ -n "$doexport" ] && printf "Running export on %s\n" $package
