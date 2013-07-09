@@ -110,6 +110,7 @@ package_src=${package}_${version}.tar.gz
 [ -z "$package" ] && exit 2
 
 if [ -n "$roxygen" ]; then
+  do_bind_package
   printf "Roxygenizing %s\n" $package
   echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
   exit 0
