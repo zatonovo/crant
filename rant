@@ -76,18 +76,10 @@ do_repo_export()
 
 do_bind_package()
 {
-  # Populate the DESCRIPTION file
-  mv $package/DESCRIPTION $package/DESCRIPTION.template
-  sed -e "s,{version},$version," -e "s,{date},$builddate," \
-    $package/DESCRIPTION.template > $package/DESCRIPTION
-  rm $package/DESCRIPTION.template
-
-  # Populate the package Rd file
-  packagerd=$package/man/$package-package.Rd
-  mv $packagerd $packagerd.template
-  sed -e "s,{version},$version," -e "s,{date},$builddate," \
-    $packagerd.template > $packagerd
-  rm $packagerd.template
+  sed -i -r "
+    s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
+    s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
+  " $package/DESCRIPTION $package/R/$package-package.R $package/man/$package-package.Rd
 }
 
 R=R
