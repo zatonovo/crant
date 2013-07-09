@@ -56,8 +56,7 @@ do_repo_export()
   if [ -n "$noscm" ]
   then
     cp -R $package export/
-    rm -rf export/$package/.svn >> /dev/null 2>&1
-    rm -rf export/$package/.git >> /dev/null 2>&1
+    rm -rf export/$package/{.svn,.git,.gitignore,.Rproj.user} >> /dev/null 2>&1
   elif [ -d "$package/.svn" ]
   then
     svn export $package export/$package
