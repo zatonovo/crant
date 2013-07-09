@@ -76,17 +76,18 @@ do_repo_export()
 
 do_bind_package()
 {
-  sed -i -r "
+  [ -n "$version" ] && sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $package/DESCRIPTION $package/R/$package-package.R $package/man/$package-package.Rd
 }
 
 R=R
-while getopts "v:d:R:DCrSiebwh:x?" opt
+while getopts "v:Vd:R:DCrSiebwh:x?" opt
 do
   case $opt in
   v) version=$OPTARG;;
+  V) version=;;
   d) builddate=$OPTARG;;
   R) R=$OPTARG;;
   D) resavedata=--resave-data;;
