@@ -113,7 +113,6 @@ do_bind_package
 if [ -n "$roxygen" ]; then
   printf "Roxygenizing %s\n" $package
   echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
-  exit 0
 fi
 
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package
