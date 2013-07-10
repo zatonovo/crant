@@ -82,7 +82,7 @@ do_bind_package()
 }
 
 R=R
-while getopts "v:Vd:R:DCrSiebwh:x?" opt
+while getopts "v:Vd:R:DCrSiebwh:xX?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -99,6 +99,7 @@ do
   w) windows=1;;
   h) windows=1; host_windows=$OPTARG;;
   x) roxygen=1;;
+  X) roxygen=1; roxystop=1;;
   ?) printf "Usage: %s: [-e] [-v version] [-d date] package\n" $0
      exit 2;;
   esac
@@ -113,6 +114,7 @@ do_bind_package
 if [ -n "$roxygen" ]; then
   printf "Roxygenizing %s\n" $package
   echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
+  [ -n "$roxystop" ] && exit 0
 fi
 
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package
