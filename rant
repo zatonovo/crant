@@ -95,10 +95,15 @@ do_bind_package()
   " $package/DESCRIPTION $package/R/$package-package.R $package/man/$package-package.Rd 2>/dev/null
 }
 
+get_current_version()
+{
+  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" $package/DESCRIPTION
+}
+
 do_upgrade_version()
 {
   pos=$1
-  current_version=$(sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" $package/DESCRIPTION)
+  current_version=$(get_current_version)
   cva=($(echo -n $current_version | sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
   cvaz=($(echo -n "${cva[*]}" | sed -r "s/[0-9]+/0/g"))
   case $pos in
