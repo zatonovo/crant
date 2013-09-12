@@ -51,18 +51,17 @@ name, although typically you will also want to provide the version number.
 
     rant -v 1.0.0 your.package
 
-To ignore the repository version and pull the latest working copy use the -S
+To ignore the repository version and pull the latest working copy use the `-S`
 option.
 
 If testing your package just before uploading to CRAN, it is wise to test 
-against the three versions of R you built before. Use the same -R option as
+against the three versions of R you built before. Use the same `-R` option as
 before.
 
     rant -v 1.0.0 -R path/to/R your.package
 
-Note that rant will automatically set the version and date in the DESCRIPTION
-and package.Rd files for you. This only works if you use placeholders in these
-files.
+Note that rant will automatically update the version and date in the
+`DESCRIPTION`, `man/*-package.Rd` and `R/*-package.R` files for you.
 
 ### Other Options
 
