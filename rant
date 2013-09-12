@@ -166,7 +166,7 @@ if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
 fi
 
-if [ -z "$version"]; then
+if [ -z "$version" ]; then
   version=$(get_current_version)
 fi
 
