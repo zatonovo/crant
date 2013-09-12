@@ -92,6 +92,38 @@ read_package_name()
   echo -n "$package_name"
 }
 
+check_clean_wc()
+{
+  [ -n "$noautocommit" ] && return
+  if [ -d .svn ]
+  then
+    scm_status=$(svn status)
+  elif [ -d .git ]
+  then
+    scm_status=$(git status --porcelain)
+  fi
+
+  if [ -n "$scm_status" ]
+  then
+    fatal 3 "Working copy is not clean. Exiting."
+  fi
+}
+
+commit()
+{
+  [ -n "$noautocommit" ] && return
+  message=$1
+  shift
+  [ -z "$1" ] && return
+  if [ -d .svn ]
+  then
+    svn commit -m "$message" $@
+  elif [ -d .git ]
+  then
+    git add $@ && git commit -m "$message"
+  fi
+}
+
 do_bind_package()
 {
   files="DESCRIPTION R/$package-package.R man/$package-package.Rd"
@@ -99,6 +131,7 @@ do_bind_package()
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
+  commit "Bump version to $version" $files
 }
 
 do_roxygenize()
@@ -106,7 +139,7 @@ do_roxygenize()
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package
     echo "library(roxygen2); roxygenize('.')" | $R --vanilla
-    [ -n "$roxystop" ] && exit 0
+    commit "Update Rd files" man
   fi
 }
 
@@ -143,7 +176,7 @@ do
   D) resavedata=--resave-data;;
   C) nocheck=1;;
   r) docran=1; nocheck=1;;
-  S) noscm=1;;
+  S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
   e) doexport=1;;
   b) binary="--binary";; # For windows
@@ -172,6 +205,8 @@ cd "$package_dir"
 package=$(read_package_name)
 check_fatal
 
+check_clean_wc
+
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
 fi
@@ -182,8 +217,9 @@ fi
 
 package_src=${package}_${version}.tar.gz
 
-do_bind_package
 do_roxygenize
+do_bind_package
+[ -n "$roxystop" ] && exit 0
 
 cd ..
 
