@@ -25,7 +25,7 @@ check_fatal()
 do_build()
 {
   $R CMD build $binary $package
-  [ -z "$nocheck" ] && $R CMD check $package
+  [ -z "$nocheck" ] && $R CMD check $package_src
   [ -n "$docran" ] && $R CMD check --as-cran $package_src
 
 
@@ -145,12 +145,17 @@ done
 shift $(($OPTIND - 1))
 
 package=$1
-package_src=${package}_${version}.tar.gz
 [ -z "$package" ] && exit 2
 
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
 fi
+
+if [ -z "$version"]; then
+  version=$(get_current_version)
+fi
+
+package_src=${package}_${version}.tar.gz
 
 do_bind_package
 
