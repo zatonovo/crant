@@ -7,6 +7,7 @@ version=1.0.0
 builddate=$(date +%F)
 host_windows=192.168.1.46
 upgrade_version=
+export=export
 
 fatal()
 {
@@ -65,25 +66,25 @@ set_windows_path()
 # Export to the export directory
 do_repo_export()
 {
-  rm -rf export/$package > /dev/null 2>&1
-  mkdir export >> /dev/null 2>&1
+  rm -rf $export/$package > /dev/null 2>&1
+  mkdir $export >> /dev/null 2>&1
   if [ -n "$noscm" ]
   then
-    cp -R $package export/
-    rm -rf export/$package/{.svn,.git,.gitignore,.Rproj.user} >> /dev/null 2>&1
+    cp -R $package $export/
+    rm -rf $export/$package/{.svn,.git,.gitignore,.Rproj.user} >> /dev/null 2>&1
   elif [ -d "$package/.svn" ]
   then
-    svn export $package export/$package
+    svn export $package $export/$package
   elif [ -d "$package/.git" ]
   then
-    mkdir -p export/$package
+    mkdir -p $export/$package
     cd $package
-    git archive master | tar -x -C ../export/$package
+    git archive master | tar -x -C ../$export/$package
     cd ..
   else
-    cp -$R $package export/
+    cp -$R $package $export/
   fi
-  cd export
+  cd $export
 }
 
 
@@ -180,7 +181,7 @@ cd -
 if [ -n "$doinstall" ]
 then
   echo "Installing package $package"
-  $R CMD INSTALL export/$package_src
+  $R CMD INSTALL $export/$package_src
 fi
 
 echo "Done with package $package"
