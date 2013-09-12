@@ -70,35 +70,39 @@ do_repo_export()
   mkdir $export >> /dev/null 2>&1
   if [ -n "$noscm" ]
   then
-    cp -R $package $export/
+    cp -R "$package_basename" $export/
     rm -rf $export/$package/{.svn,.git,.gitignore,.Rproj.user} >> /dev/null 2>&1
-  elif [ -d "$package/.svn" ]
+  elif [ -d "$package_basename/.svn" ]
   then
-    svn export $package $export/$package
-  elif [ -d "$package/.git" ]
+    svn export "$package_basename" $export/$package
+  elif [ -d "$package_basename/.git" ]
   then
     mkdir -p $export/$package
-    cd $package
-    git archive master | tar -x -C ../$export/$package
-    cd ..
+    (cd "$package_basename" && git archive master) | tar -x -C $export/$package
   else
-    cp -$R $package $export/
+    cp -$R "$package_basename" $export/
   fi
   cd $export
 }
 
+read_package_name()
+{
+  package_name=$(sed -n -r "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" "$package_basename"/DESCRIPTION)
+  [ -z "$package_name" ] && fatal 2 "Cannot determine package name. Do you have a properly formatted DESCRIPTION file?"
+  echo -n "$package_name"
+}
 
 do_bind_package()
 {
   [ -n "$version" ] && sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
-  " $package/DESCRIPTION $package/R/$package-package.R $package/man/$package-package.Rd 2>/dev/null
+  " "$package_basename"/DESCRIPTION "$package_basename"/R/$package-package.R "$package_basename"/man/$package-package.Rd 2>/dev/null
 }
 
 get_current_version()
 {
-  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" $package/DESCRIPTION
+  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" "$package_basename"/DESCRIPTION
 }
 
 do_upgrade_version()
@@ -138,14 +142,25 @@ do
   x) roxygen=1;;
   X) roxygen=1; roxystop=1;;
   u) upgrade_version=$OPTARG;;
-  ?) printf "Usage: %s: [-e] [-v version] [-d date] package\n" $0
+  ?) printf "Usage: %s: [-e] [-v version] [-d date] [path/to/package]\n" $0
      exit 2;;
   esac
 done
 shift $(($OPTIND - 1))
 
-package=$1
-[ -z "$package" ] && exit 2
+package_dir=$1
+[ -z "$package_dir" ] && package_dir=.
+package_dir=$(readlink -f "$package_dir")
+
+[ "$package_dir" = "/" ] && fatal 4 "Cannot run for root directory."
+
+package_dirname=$(dirname $package_dir)
+package_basename=$(basename $package_dir)
+
+cd "$package_dirname"
+
+package=$(read_package_name)
+check_fatal
 
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
@@ -161,7 +176,7 @@ do_bind_package
 
 if [ -n "$roxygen" ]; then
   printf "Roxygenizing %s\n" $package
-  echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
+  echo "library(roxygen2); roxygenize('"$package_basename"')" | $R --vanilla
   [ -n "$roxystop" ] && exit 0
 fi
 
