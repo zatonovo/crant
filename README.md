@@ -51,20 +51,33 @@ name, although typically you will also want to provide the version number.
 
     rant -v 1.0.0 your.package
 
-To ignore the repository version and pull the latest working copy use the -S
+To ignore the repository version and pull the latest working copy use the `-S`
 option.
 
 If testing your package just before uploading to CRAN, it is wise to test 
-against the three versions of R you built before. Use the same -R option as
+against the three versions of R you built before. Use the same `-R` option as
 before.
 
     rant -v 1.0.0 -R path/to/R your.package
 
-Note that rant will automatically set the version and date in the DESCRIPTION
-and package.Rd files for you. This only works if you use placeholders in these
-files.
+Note that rant will automatically update the version and date in the
+`DESCRIPTION`, `man/*-package.Rd` and `R/*-package.R` files for you.
 
-*Other Options*
-+ -S - Build against uncommitted source 
-+ -i - Install the package after building
-+ -r - Run the CRAN checks
+### Other Options
+
++ `-S` - Build against uncommitted source
++ `-i` - Install the package after building
++ `-r` - Run the CRAN checks
++ `-C` - Do not run `R CMD check`
++ `-V` - Do not change version number (instead of `-v`)
++ `-u #` - Increment version number at specific position, # = 1..4 (instead of `-v`)
++ `-d DATE` - Specify build date
++ `-R /path/to/R` - Use specific R interpreter
++ `-b` - Build binary package
++ `-h HOSTNAME` - Build binary package on Windows host `HOSTNAME`
+    + SSH service and bash is assumed to be installed on remote Windows host
+    + Package is assumed to be located in directory `$WORKSPACE` on remote host
++ `-x` - Roxygenize
++ `-X` - Roxygenize and exit
++ `-e` - Export to CRAN (not yet implemented)
+    + `-D` - Use `--resave-data` when executing `R CMD build`

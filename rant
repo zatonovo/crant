@@ -6,6 +6,7 @@
 version=1.0.0
 builddate=$(date +%F)
 host_windows=192.168.1.46
+upgrade_version=
 
 do_build()
 {
@@ -81,8 +82,25 @@ do_bind_package()
   " $package/DESCRIPTION $package/R/$package-package.R $package/man/$package-package.Rd 2>/dev/null
 }
 
+do_upgrade_version()
+{
+  pos=$1
+  current_version=$(sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" $package/DESCRIPTION)
+  cva=($(echo -n $current_version | sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
+  cvaz=($(echo -n "${cva[*]}" | sed -r "s/[0-9]+/0/g"))
+  case $pos in
+  1) echo $((${cva[0]} + 1))${cvaz[1]}${cvaz[2]}${cvaz[3]}${cvaz[4]}${cvaz[5]}${cvaz[6]};;
+  2) echo ${cva[0]}${cva[1]}$((${cva[2]} + 1))${cvaz[3]}${cvaz[4]}${cvaz[5]}${cvaz[6]};;
+  3) if [ -n "${cva[4]}" ]; then echo ${cva[0]}${cva[1]}${cva[2]}${cva[3]}$((${cva[4]} + 1))${cvaz[5]}${cvaz[6]};
+     else echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr; fi;;
+  4) if [ -n "${cva[6]}" ]; then echo ${cva[0]}${cva[1]}${cva[2]}${cva[3]}${cva[4]}${cva[5]}$((${cva[6]} + 1));
+     else echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr; fi;;
+  *) echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;;
+  esac
+}
+
 R=R
-while getopts "v:Vd:R:DCrSiebwh:xX?" opt
+while getopts "v:Vd:R:DCrSiebwh:xXu:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -100,6 +118,7 @@ do
   h) windows=1; host_windows=$OPTARG;;
   x) roxygen=1;;
   X) roxygen=1; roxystop=1;;
+  u) upgrade_version=$OPTARG;;
   ?) printf "Usage: %s: [-e] [-v version] [-d date] package\n" $0
      exit 2;;
   esac
@@ -110,7 +129,12 @@ package=$1
 package_src=${package}_${version}.tar.gz
 [ -z "$package" ] && exit 2
 
+if [ -n "$upgrade_version" ]; then
+  version=$(do_upgrade_version $upgrade_version)
+fi
+
 do_bind_package
+
 if [ -n "$roxygen" ]; then
   printf "Roxygenizing %s\n" $package
   echo "library(roxygen2); roxygenize('"$package"')" | $R --vanilla
