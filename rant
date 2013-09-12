@@ -100,6 +100,15 @@ do_bind_package()
   " "$package_basename"/DESCRIPTION "$package_basename"/R/$package-package.R "$package_basename"/man/$package-package.Rd 2>/dev/null
 }
 
+do_roxygenize()
+{
+  if [ -n "$roxygen" ]; then
+    printf "Roxygenizing %s\n" $package
+    echo "library(roxygen2); roxygenize('"$package_basename"')" | $R --vanilla
+    [ -n "$roxystop" ] && exit 0
+  fi
+}
+
 get_current_version()
 {
   sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" "$package_basename"/DESCRIPTION
@@ -173,12 +182,7 @@ fi
 package_src=${package}_${version}.tar.gz
 
 do_bind_package
-
-if [ -n "$roxygen" ]; then
-  printf "Roxygenizing %s\n" $package
-  echo "library(roxygen2); roxygenize('"$package_basename"')" | $R --vanilla
-  [ -n "$roxystop" ] && exit 0
-fi
+do_roxygenize
 
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package
 [ -n "$doexport" ] && printf "Running export on %s\n" $package
