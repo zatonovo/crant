@@ -87,14 +87,14 @@ do_repo_export()
 
 read_package_name()
 {
-  package_name=$(sed -n -r "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" "$package_basename"/DESCRIPTION)
+  package_name=$(sed -n -r "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
   [ -z "$package_name" ] && fatal 2 "Cannot determine package name. Do you have a properly formatted DESCRIPTION file?"
   echo -n "$package_name"
 }
 
 do_bind_package()
 {
-  files='"$package_basename"/DESCRIPTION "$package_basename"/R/$package-package.R "$package_basename"/man/$package-package.Rd'
+  files="DESCRIPTION R/$package-package.R man/$package-package.Rd"
   [ -n "$version" ] && sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
@@ -105,14 +105,14 @@ do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package
-    echo "library(roxygen2); roxygenize('"$package_basename"')" | $R --vanilla
+    echo "library(roxygen2); roxygenize('.')" | $R --vanilla
     [ -n "$roxystop" ] && exit 0
   fi
 }
 
 get_current_version()
 {
-  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" "$package_basename"/DESCRIPTION
+  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
 }
 
 do_upgrade_version()
@@ -167,7 +167,7 @@ package_dir=$(readlink -f "$package_dir")
 package_dirname=$(dirname $package_dir)
 package_basename=$(basename $package_dir)
 
-cd "$package_dirname"
+cd "$package_dir"
 
 package=$(read_package_name)
 check_fatal
@@ -184,6 +184,8 @@ package_src=${package}_${version}.tar.gz
 
 do_bind_package
 do_roxygenize
+
+cd ..
 
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package
 [ -n "$doexport" ] && printf "Running export on %s\n" $package
