@@ -94,10 +94,11 @@ read_package_name()
 
 do_bind_package()
 {
+  files='"$package_basename"/DESCRIPTION "$package_basename"/R/$package-package.R "$package_basename"/man/$package-package.Rd'
   [ -n "$version" ] && sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
-  " "$package_basename"/DESCRIPTION "$package_basename"/R/$package-package.R "$package_basename"/man/$package-package.Rd 2>/dev/null
+  " $files 2>/dev/null
 }
 
 do_roxygenize()
