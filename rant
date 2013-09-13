@@ -70,7 +70,7 @@ do_repo_export()
   mkdir $export >> /dev/null 2>&1
   if [ -n "$noscm" ]
   then
-    cp -R "$package_basename" $export/
+    cp -R "$package_basename" $export/$package
     rm -rf $export/$package/{.svn,.git,.gitignore,.Rproj.user} >> /dev/null 2>&1
   elif [ -d "$package_basename/.svn" ]
   then
@@ -80,7 +80,7 @@ do_repo_export()
     mkdir -p $export/$package
     (cd "$package_basename" && git archive master) | tar -x -C $export/$package
   else
-    cp -$R "$package_basename" $export/
+    cp -$R "$package_basename" $export/$package
   fi
   cd $export
 }
