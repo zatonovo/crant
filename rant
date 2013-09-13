@@ -3,7 +3,7 @@
 # like doexport with a few additional commands.
 # TODO: Add submit to CRAN
 # ftp://cran.r-project.org/incoming and send email to cran@r-project.org
-version=1.0.0
+version=
 builddate=$(date +%F)
 host_windows=192.168.1.46
 upgrade_version=
@@ -146,7 +146,6 @@ while getopts "v:Vd:R:DCrSiebwh:xXu:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
-  V) version=;;
   d) builddate=$OPTARG;;
   R) R=$OPTARG;;
   D) resavedata=--resave-data;;
