@@ -94,7 +94,7 @@ read_package_name()
   echo -n "$package_name"
 }
 
-check_clean_wc()
+is_clean_wc()
 {
   [ -n "$noautocommit" ] && return
   if [ -d .svn ]
@@ -107,6 +107,16 @@ check_clean_wc()
 
   if [ -n "$scm_status" ]
   then
+    return 1
+  else
+    return 0
+  fi
+}
+
+check_clean_wc()
+{
+  if ! is_clean_wc
+  then
     fatal 3 "Working copy is not clean. Exiting."
   fi
 }
@@ -117,7 +127,10 @@ commit()
   message=$1
   shift
   [ -z "$1" ] && return
-  if [ -d .svn ]
+  if is_clean_wc
+  then
+    true
+  elif [ -d .svn ]
   then
     svn commit -m "$message" $@
   elif [ -d .git ]
