@@ -142,7 +142,7 @@ do_roxygenize()
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package
     echo "library(roxygen2); roxygenize('.')" | $R --vanilla
-    [ -z "$1" ] && commit "Update Rd files" man DESCRIPTION NAMESPACE
+    [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
   fi
 }
 
