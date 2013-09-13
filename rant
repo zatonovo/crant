@@ -4,7 +4,7 @@
 # TODO: Add submit to CRAN
 # ftp://cran.r-project.org/incoming and send email to cran@r-project.org
 version=
-builddate=$(date +%F)
+builddate_default=$(date +%F)
 host_windows=192.168.1.46
 upgrade_version=
 export=export
@@ -87,7 +87,7 @@ do_repo_export()
 
 read_package_name()
 {
-  package_name=$(sed -n -r
+  package_name=$(sed -n -r \
     "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
   [ -z "$package_name" ] &&
     fatal 2 "Cannot determine package name. Is your DESCRIPTION file properly formatted?"
@@ -148,6 +148,11 @@ do_roxygenize()
 get_current_version()
 {
   sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
+}
+
+get_current_date()
+{
+  sed -n -r "/^Date: /{s/^Date:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
 }
 
 do_upgrade_version()
@@ -221,6 +226,11 @@ fi
 
 if [ -z "$version" ]; then
   version=$(get_current_version)
+  builddate_default=$(get_current_date)
+fi
+
+if [ -z "$builddate" ]; then
+  builddate=$builddate_default
 fi
 
 package_src=${package}_${version}.tar.gz
