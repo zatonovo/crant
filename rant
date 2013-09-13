@@ -87,8 +87,10 @@ do_repo_export()
 
 read_package_name()
 {
-  package_name=$(sed -n -r "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
-  [ -z "$package_name" ] && fatal 2 "Cannot determine package name. Do you have a properly formatted DESCRIPTION file?"
+  package_name=$(sed -n -r
+    "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
+  [ -z "$package_name" ] &&
+    fatal 2 "Cannot determine package name. Is your DESCRIPTION file properly formatted?"
   echo -n "$package_name"
 }
 
@@ -152,15 +154,22 @@ do_upgrade_version()
 {
   pos=$1
   current_version=$(get_current_version)
-  cva=($(echo -n $current_version | sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
-  cvaz=($(echo -n "${cva[*]}" | sed -r "s/[0-9]+/0/g"))
+  v=($(echo -n $current_version |
+    sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
+  vz=($(echo -n "${v[*]}" | sed -r "s/[0-9]+/0/g"))
   case $pos in
-  1) echo $((${cva[0]} + 1))${cvaz[1]}${cvaz[2]}${cvaz[3]}${cvaz[4]}${cvaz[5]}${cvaz[6]};;
-  2) echo ${cva[0]}${cva[1]}$((${cva[2]} + 1))${cvaz[3]}${cvaz[4]}${cvaz[5]}${cvaz[6]};;
-  3) if [ -n "${cva[4]}" ]; then echo ${cva[0]}${cva[1]}${cva[2]}${cva[3]}$((${cva[4]} + 1))${cvaz[5]}${cvaz[6]};
-     else echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr; fi;;
-  4) if [ -n "${cva[6]}" ]; then echo ${cva[0]}${cva[1]}${cva[2]}${cva[3]}${cva[4]}${cva[5]}$((${cva[6]} + 1));
-     else echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr; fi;;
+  1) echo $((${v[0]} + 1))${vz[1]}${vz[2]}${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
+  2) echo ${v[0]}${v[1]}$((${v[2]} + 1))${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
+  3) if [ -n "${v[4]}" ]; then
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1))${vz[5]}${vz[6]};
+     else
+       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+     fi;;
+  4) if [ -n "${v[6]}" ]; then
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}${v[5]}$((${v[6]} + 1));
+     else
+       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+     fi;;
   *) echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;;
   esac
 }
