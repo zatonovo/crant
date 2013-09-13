@@ -275,10 +275,18 @@ fi
 do_repo_export
 check_fatal "Error exporting repository"
 
-[ -z "$doexport" ] && do_build
-check_fatal "Error building"
-[ -n "$doexport" ] && do_export
-check_fatal "Error exporting"
+if [ -z "$doexport" ]
+then
+  do_build
+  check_fatal "Error building"
+fi
+
+if [ -n "$doexport" ]
+then
+  do_export
+  check_fatal "Error exporting"
+fi
+
 cd -
 
 if [ -n "$doinstall" ]
