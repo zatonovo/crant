@@ -133,6 +133,7 @@ do_bind_package()
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
+  do_roxygenize --no-commit
   commit "Bump version to $version" $files
 }
 
@@ -141,7 +142,7 @@ do_roxygenize()
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package
     echo "library(roxygen2); roxygenize('.')" | $R --vanilla
-    commit "Update Rd files" man
+    [ -z "$1" ] && commit "Update Rd files" man
   fi
 }
 
