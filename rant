@@ -87,7 +87,7 @@ do_repo_export()
 
 read_package_name()
 {
-  package_name=$(sed -n -r
+  package_name=$(sed -n -r \
     "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
   [ -z "$package_name" ] &&
     fatal 2 "Cannot determine package name. Is your DESCRIPTION file properly formatted?"
