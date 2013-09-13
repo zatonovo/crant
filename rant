@@ -217,17 +217,20 @@ package_basename=$(basename $package_dir)
 cd "$package_dir"
 
 package=$(read_package_name)
-check_fatal
+check_fatal "Error reading package name"
 
 check_clean_wc
 
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
+  check_fatal "Error upgrading version"
 fi
 
 if [ -z "$version" ]; then
   version=$(get_current_version)
+  check_fatal "Error reading current version"
   builddate_default=$(get_current_date)
+  check_fatal "Error reading current date"
 fi
 
 if [ -z "$builddate" ]; then
@@ -257,15 +260,19 @@ then
 fi
 
 do_repo_export
+check_fatal "Error exporting repository"
 
 [ -z "$doexport" ] && do_build
+check_fatal "Error building"
 [ -n "$doexport" ] && do_export
+check_fatal "Error exporting"
 cd -
 
 if [ -n "$doinstall" ]
 then
   echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $export/$package_src
+  check_fatal "Error installing"
 fi
 
 echo "Done with package $package" >> /dev/stderr
