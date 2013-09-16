@@ -25,8 +25,17 @@ check_fatal()
 do_build()
 {
   $R CMD build $binary $package
-  [ -z "$nocheck" ] && $R CMD check $package_src
-  [ -n "$docran" ] && $R CMD check --as-cran $package_src
+  check_fatal "R CMD build failed"
+  if [ -z "$nocheck" ]
+  then
+    $R CMD check $package_src
+    check_fatal "R CMD check failed"
+  fi
+  if [ -n "$docran" ]
+  then
+    $R CMD check --as-cran $package_src
+    check_fatal "R CMD check --as-cran failed"
+  fi
 
 
   if [[ -z "$binary" && -n "$windows" ]]
