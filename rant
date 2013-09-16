@@ -30,11 +30,25 @@ do_build()
   then
     $R CMD check $package_src
     check_fatal "R CMD check failed"
+    for t in WARNING NOTE
+    do
+      if egrep ^$t "$package.Rcheck/00check.log"
+      then
+        fatal 5 "R CMD check returned $t"
+      fi
+    done
   fi
   if [ -n "$docran" ]
   then
     $R CMD check --as-cran $package_src
     check_fatal "R CMD check --as-cran failed"
+    for t in WARNING NOTE
+    do
+      if egrep ^$t "$package.Rcheck/00check.log"
+      then
+        fatal 6 "R CMD check --as-cran returned $t"
+      fi
+    done
   fi
 
 
