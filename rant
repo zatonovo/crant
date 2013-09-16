@@ -32,7 +32,7 @@ do_build()
   if [[ -z "$binary" && -n "$windows" ]]
   then
     # Try building on Windows if not on Windows (is that contradictory ;)
-    echo "Attempting to build Windows package"
+    echo "Attempting to build Windows package" >> /dev/stderr
     set -x
     cmd_env='source ~/.bashrc; cd $WORKSPACE'
     cmd_rant="rant -v $version -d $builddate -b $package"
@@ -60,7 +60,7 @@ set_windows_path()
     RANT="/c/Program Files (x86)/MiKTeX 2.7/miktex/bin:/c/Rtools/bin:/c/Rtools/perl/bin:/c/Rtools/MinGW/bin"
     export PATH=$RANT:$PATH
   fi
-  echo "Using PATH=$PATH"
+  echo "Using PATH=$PATH" >> /dev/stderr
 }
 
 # Export to the export directory
@@ -94,6 +94,51 @@ read_package_name()
   echo -n "$package_name"
 }
 
+is_clean_wc()
+{
+  [ -n "$noautocommit" ] && return
+  if [ -d .svn ]
+  then
+    scm_status=$(svn status)
+  elif [ -d .git ]
+  then
+    scm_status=$(git status --porcelain)
+  fi
+
+  if [ -n "$scm_status" ]
+  then
+    return 1
+  else
+    return 0
+  fi
+}
+
+check_clean_wc()
+{
+  if ! is_clean_wc
+  then
+    fatal 3 "Working copy is not clean. Exiting."
+  fi
+}
+
+commit()
+{
+  [ -n "$noautocommit" ] && return
+  message=$1
+  shift
+  [ -z "$1" ] && return
+  if is_clean_wc
+  then
+    true
+  elif [ -d .svn ]
+  then
+    svn commit -m "$message" $@
+  elif [ -d .git ]
+  then
+    git add $@ && git commit -m "$message"
+  fi
+}
+
 do_bind_package()
 {
   files="DESCRIPTION R/$package-package.R man/$package-package.Rd"
@@ -101,14 +146,16 @@ do_bind_package()
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
+  do_roxygenize --no-commit
+  commit "Bump version to $version" $files
 }
 
 do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
-    printf "Roxygenizing %s\n" $package
+    printf "Roxygenizing %s\n" $package >> /dev/stderr
     echo "library(roxygen2); roxygenize('.')" | $R --vanilla
-    [ -n "$roxystop" ] && exit 0
+    [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
   fi
 }
 
@@ -156,7 +203,7 @@ do
   D) resavedata=--resave-data;;
   C) nocheck=1;;
   r) docran=1; nocheck=1;;
-  S) noscm=1;;
+  S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
   e) doexport=1;;
   b) binary="--binary";; # For windows
@@ -165,7 +212,7 @@ do
   x) roxygen=1;;
   X) roxygen=1; roxystop=1;;
   u) upgrade_version=$OPTARG;;
-  ?) printf "Usage: %s: [-e] [-v version] [-d date] [path/to/package]\n" $0
+  ?) printf "Usage: %s: [-e] [-v version] [-d date] [path/to/package]\n" $0 >> /dev/stderr
      exit 2;;
   esac
 done
@@ -183,15 +230,20 @@ package_basename=$(basename $package_dir)
 cd "$package_dir"
 
 package=$(read_package_name)
-check_fatal
+check_fatal "Error reading package name"
+
+check_clean_wc
 
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
+  check_fatal "Error upgrading version"
 fi
 
 if [ -z "$version" ]; then
   version=$(get_current_version)
+  check_fatal "Error reading current version"
   builddate_default=$(get_current_date)
+  check_fatal "Error reading current date"
 fi
 
 if [ -z "$builddate" ]; then
@@ -200,13 +252,16 @@ fi
 
 package_src=${package}_${version}.tar.gz
 
-do_bind_package
 do_roxygenize
+check_fatal "Error roxygenizing"
+do_bind_package
+check_fatal "Error binding package"
+[ -n "$roxystop" ] && exit 0
 
 cd ..
 
-[ -z "$doexport" ] && printf "Running build chain on %s\n" $package
-[ -n "$doexport" ] && printf "Running export on %s\n" $package
+[ -z "$doexport" ] && printf "Running build chain on %s\n" $package >> /dev/stderr
+[ -n "$doexport" ] && printf "Running export on %s\n" $package >> /dev/stderr
 
 # In windows, get the latest source
 if [ -n "$binary" ]
@@ -218,15 +273,19 @@ then
 fi
 
 do_repo_export
+check_fatal "Error exporting repository"
 
 [ -z "$doexport" ] && do_build
+check_fatal "Error building"
 [ -n "$doexport" ] && do_export
+check_fatal "Error exporting"
 cd -
 
 if [ -n "$doinstall" ]
 then
-  echo "Installing package $package"
+  echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $export/$package_src
+  check_fatal "Error installing"
 fi
 
-echo "Done with package $package"
+echo "Done with package $package" >> /dev/stderr
