@@ -42,7 +42,7 @@ do_build()
   then
     $R CMD check --as-cran $package_src
     check_fatal "R CMD check --as-cran failed"
-    for t in WARNING NOTE
+    for t in WARNING
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
