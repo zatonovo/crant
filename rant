@@ -5,9 +5,20 @@
 # ftp://cran.r-project.org/incoming and send email to cran@r-project.org
 version=
 builddate_default=$(date +%F)
-host_windows=192.168.1.46
 upgrade_version=
+R=R
 export=export
+sed=sed
+
+set_sed()
+{
+  platform=$(uname -s)
+  if [ "$platform" = "Darwin" ]
+  then
+    echo "NOTE: Using gsed on Darwin"
+    sed=gsed
+  fi
+}
 
 fatal()
 {
@@ -49,18 +60,6 @@ do_build()
         fatal 6 "R CMD check --as-cran returned $t"
       fi
     done
-  fi
-
-
-  if [[ -z "$binary" && -n "$windows" ]]
-  then
-    # Try building on Windows if not on Windows (is that contradictory ;)
-    echo "Attempting to build Windows package" >> /dev/stderr
-    set -x
-    cmd_env='source ~/.bashrc; cd $WORKSPACE'
-    cmd_rant="rant -v $version -d $builddate -b $package"
-    ssh $host_windows "$cmd_env; $cmd_rant"
-    set +x
   fi
 }
 
@@ -110,7 +109,7 @@ do_repo_export()
 
 read_package_name()
 {
-  package_name=$(sed -n -r \
+  package_name=$($sed -n -r \
     "/^Package:/{s/^Package:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION)
   [ -z "$package_name" ] &&
     fatal 2 "Cannot determine package name. Is your DESCRIPTION file properly formatted?"
@@ -165,7 +164,7 @@ commit()
 do_bind_package()
 {
   files="DESCRIPTION R/$package-package.R man/$package-package.Rd"
-  [ -n "$version" ] && sed -i -r "
+  [ -n "$version" ] && $sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
@@ -185,12 +184,12 @@ do_roxygenize()
 
 get_current_version()
 {
-  sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
+  $sed -n -r "/^Version: /{s/^Version:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
 }
 
 get_current_date()
 {
-  sed -n -r "/^Date: /{s/^Date:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
+  $sed -n -r "/^Date: /{s/^Date:[ \t]+([^ \t]+)[ \t]*$/\1/;p}" DESCRIPTION
 }
 
 do_upgrade_version()
@@ -198,8 +197,8 @@ do_upgrade_version()
   pos=$1
   current_version=$(get_current_version)
   v=($(echo -n $current_version |
-    sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
-  vz=($(echo -n "${v[*]}" | sed -r "s/[0-9]+/0/g"))
+    $sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
+  vz=($(echo -n "${v[*]}" | $sed -r "s/[0-9]+/0/g"))
   case $pos in
   1) echo $((${v[0]} + 1))${vz[1]}${vz[2]}${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
   2) echo ${v[0]}${v[1]}$((${v[2]} + 1))${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
@@ -217,7 +216,7 @@ do_upgrade_version()
   esac
 }
 
-R=R
+set_sed
 while getopts "v:Vd:R:DCrSiebwh:xXu:?" opt
 do
   case $opt in
@@ -231,8 +230,6 @@ do
   i) doinstall=1;;
   e) doexport=1;;
   b) binary="--binary";; # For windows
-  w) windows=1;;
-  h) windows=1; host_windows=$OPTARG;;
   x) roxygen=1;;
   X) roxygen=1; roxystop=1;;
   u) upgrade_version=$OPTARG;;
