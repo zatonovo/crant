@@ -9,14 +9,16 @@ upgrade_version=
 R=R
 export=export
 sed=sed
+readlink=readlink
 
 set_sed()
 {
   platform=$(uname -s)
   if [ "$platform" = "Darwin" ]
   then
-    echo "NOTE: Using gsed on Darwin"
+    echo "NOTE: Using GNU coreutils on Darwin"
     sed=gsed
+    readlink=greadlink
   fi
 }
 
@@ -241,7 +243,7 @@ shift $(($OPTIND - 1))
 
 package_dir=$1
 [ -z "$package_dir" ] && package_dir=.
-package_dir=$(readlink -f "$package_dir")
+package_dir=$($readlink -f "$package_dir")
 
 [ "$package_dir" = "/" ] && fatal 4 "Cannot run for root directory."
 

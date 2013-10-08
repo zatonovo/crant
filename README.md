@@ -80,3 +80,13 @@ Note that rant will automatically update the version and date in the
     + Package is assumed to be located in directory `$WORKSPACE` on remote host
 + `-e` - Export to CRAN (not yet implemented)
     + `-D` - Use `--resave-data` when executing `R CMD build`
+
+Mac OS X Notes
+==============
+Since Mac OS X comes from a BSD lineage, the versions of base utility
+commands have different syntax. This causes a lot of problems. The
+workaround is to install ```coreutils```, which installs the GNU 
+variants of all the commands. The rant script detects a Darwin platform
+and will substitute the ```g``` variants for the standard commands.
+
+
