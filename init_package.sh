@@ -6,8 +6,10 @@ package=${PWD##/*/}
 testlib=testthat
 
 setup_directories() {
-  mkdir R man tests
-  mkdir -p inst/tests
+  for dir in R man tests inst/tests
+  do
+    [ ! -d "$dir" ] && mkdir -p $dir
+  done
 }
 
 setup_testthat() {
@@ -63,3 +65,65 @@ setup_package_rd() {
 #' @keywords package
 NULL" > R/$package-package.R
 }
+
+setup_r_ignore() {
+  [ ! -f ".gitignore" ] && echo "^.*\.Rproj$
+^\.Rproj\.user$
+^rename$
+^\.gitignore$
+^README.md$
+^LICENSE$
+^tools$
+^.travis.yml$
+" > .Rbuildignore
+}
+
+setup_git_ignore() {
+  [ ! -f ".gitignore" ] && echo "# History files
+.Rhistory
+.RData
+
+# Example code in package build process
+*-Ex.R" > .gitignore
+}
+
+setup_travis() {
+  [ ! -f ".travis.yml" ] && cat > .travis.yml <<EOM
+# it is not really python, but there is no R support on Travis CI yet
+language: python
+
+# environment variables
+env:
+  - R_LIBS_USER=~/R
+
+# install dependencies
+install:
+  - sudo apt-add-repository -y 'deb http://cran.rstudio.com/bin/linux/ubuntu precise/'
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+  - sudo apt-add-repository -y ppa:marutter/c2d4u
+  - sudo apt-get update
+  - sudo apt-get install --no-install-recommends r-base-dev r-cran-xml r-cran-rcurl r-cran-mass r-cran-codetools r-cran-lattice r-cran-matrix r-cran-nlme r-cran-survival r-cran-boot r-cran-cluster r-cran-foreign r-cran-kernsmooth r-cran-rpart r-cran-class r-cran-nnet r-cran-spatial r-cran-mgcv
+      qpdf texinfo texlive-latex-recommended texlive-latex-extra lmodern texlive-fonts-recommended texlive-fonts-extra
+  - "[ ! -d ~/R ] && mkdir ~/R"
+  - R --version
+  - R -e '.libPaths(); sessionInfo()'
+  - Rscript -e 'options(repos = c("http://rforge.net", "http://cran.rstudio.org")); install.packages(c("devtools")); library(devtools); install_github("lambda.r","zatonovo"); install()'
+  - git clone https://github.com/muxspace/crant.git ~/crant
+
+# run tests
+script:
+  - ~/crant/rant -S
+EOM
+}
+
+
+setup_directories
+setup_description
+setup_namespace
+setup_package_rd
+setup_r_ignore
+setup_git_ignore
+setup_testthat
+setup_travis
+
+echo "To complete initialization be sure to complete R/$package-package.R"
