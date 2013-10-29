@@ -102,7 +102,7 @@ do_repo_export()
   elif [ -d "$package_basename/.git" ]
   then
     mkdir -p $export/$package
-    (cd "$package_basename" && git archive master) | tar -x -C $export/$package
+    (cd "$package_basename" && git archive HEAD) | tar -x -C $export/$package
   else
     cp -$R "$package_basename" $export/$package
   fi
