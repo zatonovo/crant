@@ -37,11 +37,11 @@ check_fatal()
 
 do_build()
 {
-  $R CMD build $binary $package
+  $R CMD build $binary $vignettes $package
   check_fatal "R CMD build failed"
   if [ -z "$nocheck" ]
   then
-    $R CMD check $package_src
+    $R CMD check $vignettes $package_src
     check_fatal "R CMD check failed"
     for t in WARNING NOTE
     do
@@ -53,7 +53,7 @@ do_build()
   fi
   if [ -n "$docran" ]
   then
-    $R CMD check --as-cran $package_src
+    $R CMD check $vignettes --as-cran $package_src
     check_fatal "R CMD check --as-cran failed"
     for t in WARNING
     do
@@ -68,7 +68,7 @@ do_build()
 do_export()
 {
   # No need for binary here, since windows packages are built manually
-  $R CMD build $resavedata $package
+  $R CMD build $vignettes $resavedata $package
   # The built source package is all they want here
   #tar jcf ${package}_${version}.src.tbz2 $package
 
@@ -227,6 +227,7 @@ do
   R) R=$OPTARG;;
   D) resavedata=--resave-data;;
   C) nocheck=1;;
+  V) vignettes=--no-build-vignettes;;
   r) docran=1; nocheck=1;;
   S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
