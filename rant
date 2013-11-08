@@ -165,7 +165,9 @@ commit()
 
 do_bind_package()
 {
-  files="DESCRIPTION R/$package-package.R man/$package-package.Rd"
+  files=$(for file in DESCRIPTION R/$package-package.R man/$package-package.Rd; do
+    if [ -f $file ]; then echo $file; fi
+  done)
   [ -n "$version" ] && $sed -i -r "
     s/(Version: ([\\]tab |))([0-9.-]+|\{version\})/\1$version/;
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
