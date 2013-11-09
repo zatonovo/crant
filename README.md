@@ -65,7 +65,8 @@ Note that rant will automatically update the version and date in the
 
 ### Other Options
 
-+ `-S` - Build against uncommitted source
++ `-s` - Do not autocommit, allow dirty working copy
++ `-S` - Build against uncommitted source. Implies `-s`
 + `-i` - Install the package after building
 + `-r` - Run the CRAN checks
 + `-C` - Do not run `R CMD check`

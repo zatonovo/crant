@@ -221,7 +221,7 @@ do_upgrade_version()
 }
 
 set_sed
-while getopts "v:Vd:R:DCrSitebwh:xXu:?" opt
+while getopts "v:Vd:R:DCrSsitebwh:xXu:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -231,6 +231,7 @@ do
   C) nocheck=1;;
   V) vignettes=--no-build-vignettes;;
   r) docran=1; nocheck=1;;
+  s) noautocommit=1;;
   S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
   t) tests='--install-tests';;
