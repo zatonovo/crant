@@ -165,6 +165,9 @@ commit()
 
 do_bind_package()
 {
+  if [ "$version" == "$(get_current_version)" -a "$builddate" == "$(get_current_date)" ]; then
+    return
+  fi
   files=$(for file in DESCRIPTION R/$package-package.R man/$package-package.Rd; do
     if [ -f $file ]; then echo $file; fi
   done)
