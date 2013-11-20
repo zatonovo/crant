@@ -24,7 +24,7 @@ set_sed()
 
 fatal()
 {
-  [ -n "$2" ] && echo "$2" >> /dev/stderr
+  [ -n "$2" ] && echo "Fatal: $2" >> /dev/stderr
   exit $1
 }
 
