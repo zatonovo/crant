@@ -7,7 +7,7 @@ version=
 builddate_default=$(date +%F)
 upgrade_version=
 R=R
-export=export
+export=$(mktemp -d --tmpdir rant.XXXXXXXXXXXX)
 sed=sed
 readlink=readlink
 
