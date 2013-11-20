@@ -104,7 +104,7 @@ do_repo_export()
     mkdir -p $export/$package
     (cd "$package_basename" && git archive HEAD) | tar -x -C $export/$package
   else
-    cp -$R "$package_basename" $export/$package
+    cp -R "$package_basename" $export/$package
   fi
   cd $export
 }
