@@ -1,4 +1,14 @@
 #!/bin/bash
+# Usage is as follows.
+# In R:
+#   package.skeleton('package-name', code_files='*.R', force=TRUE)
+# Then:
+#   cd package-name
+#   init_platform.sh
+# 
+# Alternatively if you already have most of a package and want 
+# test harnesses, ignore files, etc, then just run init_platform.sh
+# in the root of the package directory.
 
 date=$(date +%Y-%m-%d)
 package=${PWD##/*/}
@@ -67,7 +77,7 @@ NULL" > R/$package-package.R
 }
 
 setup_r_ignore() {
-  [ ! -f ".gitignore" ] && echo "^.*\.Rproj$
+  [ ! -f ".Rbuildignore" ] && echo "^.*\.Rproj$
 ^\.Rproj\.user$
 ^rename$
 ^\.gitignore$
@@ -102,12 +112,21 @@ install:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
   - sudo apt-add-repository -y ppa:marutter/c2d4u
   - sudo apt-get update
-  - sudo apt-get install --no-install-recommends libcurl-dev r-base-dev r-cran-xml r-cran-rcurl r-cran-mass r-cran-codetools r-cran-lattice r-cran-matrix r-cran-nlme r-cran-survival r-cran-boot r-cran-cluster r-cran-foreign r-cran-kernsmooth r-cran-rpart r-cran-class r-cran-nnet r-cran-spatial r-cran-mgcv
-      qpdf texinfo texlive-latex-recommended texlive-latex-extra lmodern texlive-fonts-recommended texlive-fonts-extra
+  - sudo apt-get install --no-install-recommends libcurl4-openssl-dev
+      r-base-dev r-cran-xml r-cran-rcurl r-cran-mass r-cran-codetools 
+      r-cran-lattice r-cran-matrix r-cran-nlme r-cran-survival r-cran-boot
+      r-cran-cluster r-cran-foreign r-cran-kernsmooth r-cran-rpart 
+      r-cran-class r-cran-nnet r-cran-spatial r-cran-mgcv
+      qpdf texinfo texlive-latex-recommended texlive-latex-extra lmodern 
+      texlive-fonts-recommended texlive-fonts-extra
   - "[ ! -d ~/R ] && mkdir ~/R"
   - R --version
   - R -e '.libPaths(); sessionInfo()'
-  - Rscript -e 'options(repos = c("http://rforge.net", "http://cran.rstudio.org")); install.packages(c("devtools")); library(devtools); install_github("lambda.r","zatonovo"); install()'
+  - R --vanilla -e 'options(repos = c("http://rforge.net", "http://cran.rstudio.org"))'
+      -e 'install.packages(c("devtools","testthat"))'
+      -e 'library(devtools)'
+      -e 'install_github("lambda.r","zatonovo")'
+      -e 'install()'
   - git clone https://github.com/muxspace/crant.git ~/crant
 
 # run tests
