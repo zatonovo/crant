@@ -159,7 +159,7 @@ commit()
     svn commit -m "$message" $@
   elif [ -d .git ]
   then
-    git add $@ && git commit -m "$message"
+    git add -A $@ && git commit -m "$message"
   fi
 }
 
