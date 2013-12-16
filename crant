@@ -42,24 +42,24 @@ do_build()
   if [ -z "$nocheck" ]
   then
     $R CMD check $vignettes $package_src
-    check_fatal "R CMD check failed"
+    check_fatal "R CMD check failed. See $export"
     for t in WARNING NOTE
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 5 "R CMD check returned $t"
+        fatal 5 "R CMD check returned $t. See $export"
       fi
     done
   fi
   if [ -n "$docran" ]
   then
     $R CMD check $vignettes --as-cran $package_src
-    check_fatal "R CMD check --as-cran failed"
+    check_fatal "R CMD check --as-cran failed. See $export"
     for t in WARNING
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 6 "R CMD check --as-cran returned $t"
+        fatal 6 "R CMD check --as-cran returned $t. See $export"
       fi
     done
   fi
@@ -299,16 +299,16 @@ then
 fi
 
 do_repo_export
-check_fatal "Error exporting repository"
+check_fatal "Error exporting repository to $export"
 
 if [ -z "$doexport" ]
 then
   do_build
-  check_fatal "Error building"
+  check_fatal "Error building. See $export"
 elif [ -n "$doexport" ]
 then
   do_export
-  check_fatal "Error exporting"
+  check_fatal "Error exporting. See $export"
 fi
 
 cd -
