@@ -286,6 +286,8 @@ check_fatal "Error binding package"
 
 cd ..
 
+printf "Output directory: %s\n" $export >> /dev/stderr
+
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package >> /dev/stderr
 [ -n "$doexport" ] && printf "Running export on %s\n" $package >> /dev/stderr
 
