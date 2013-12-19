@@ -37,7 +37,7 @@ check_fatal()
 
 do_build()
 {
-  $R CMD build $binary $vignettes $package
+  $R CMD build $binary $vignettes --compact-vignettes=gs+qpdf $package
   check_fatal "R CMD build failed"
   if [ -z "$nocheck" ]
   then
