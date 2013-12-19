@@ -209,12 +209,12 @@ do_upgrade_version()
   3) if [ -n "${v[4]}" ]; then
        echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1))${vz[5]}${vz[6]};
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}.1;
      fi;;
   4) if [ -n "${v[6]}" ]; then
        echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}${v[5]}$((${v[6]} + 1));
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}.1;
      fi;;
   *) echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;;
   esac
