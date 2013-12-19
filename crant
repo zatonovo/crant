@@ -221,7 +221,7 @@ do_upgrade_version()
 }
 
 set_sed
-while getopts "v:Vd:R:DCrSiebwh:xXu:?" opt
+while getopts "v:Vd:R:DCrSiIebwh:xXu:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -233,6 +233,7 @@ do
   r) docran=1; nocheck=1;;
   S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
+  I) docopy=1;;
   e) doexport=1;;
   b) binary="--binary";; # For windows
   x) roxygen=1;;
@@ -320,6 +321,13 @@ then
   echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $export/$package_src
   check_fatal "Error installing"
+fi
+
+if [ -n "$docopy" ]
+then
+  echo "Copying package $package to $package_dirname" >> /dev/stderr
+  cp -f $export/$package_src $package_dirname
+  check_fatal "Error copying"
 fi
 
 echo "Done with package $package" >> /dev/stderr

@@ -67,6 +67,7 @@ Note that rant will automatically update the version and date in the
 
 + `-S` - Build against uncommitted source
 + `-i` - Install the package after building
++ `-I` - Copy (overwrite) the package `.tar.gz` to the parent directory after building
 + `-r` - Run the CRAN checks
 + `-C` - Do not run `R CMD check`
 + `-V` - Do not build vignettes, even not when running CRAN checks
