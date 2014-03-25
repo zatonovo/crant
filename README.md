@@ -68,11 +68,13 @@ file with the extension `.tmpl` exists, its contents are prepended to the file
 
 ### Other Options
 
-+ `-S` - Build against uncommitted source
++ `-s` - Do not autocommit, allow dirty working copy
++ `-S` - Build against uncommitted source. Implies `-s`
 + `-i` - Install the package after building
 + `-r` - Run the CRAN checks
 + `-C` - Do not run `R CMD check`
 + `-V` - Do not build vignettes, even not when running CRAN checks
++ `-M` - Do not build manual, even not when running CRAN checks
 + `-u #` - Increment version number at specific position, # = 1..4 (instead of `-v`)
 + `-d DATE` - Specify build date
 + `-x` - Roxygenize
