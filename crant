@@ -43,6 +43,11 @@ do_build()
   then
     $R CMD check $vignettes $package_src
     check_fatal "R CMD check failed"
+    if [ -n "$copy_output" ]
+    then
+      mkdir -p "$package_dir/Examples" && cp "$package.Rcheck/$package-Ex.Rout" "$package_dir/Examples/$package-Ex.Rout.save"
+      check_fatal "Copying output failed"
+    fi
     for t in WARNING NOTE
     do
       if egrep ^$t "$package.Rcheck/00check.log"
@@ -224,7 +229,7 @@ do_upgrade_version()
 }
 
 set_sed
-while getopts "v:VMd:R:DCrSsitebwh:xXu:?" opt
+while getopts "v:VMd:R:DCrSsitebwh:xXu:o?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -244,6 +249,7 @@ do
   x) roxygen=1;;
   X) roxygen=1; roxystop=1;;
   u) upgrade_version=$OPTARG;;
+  o) copy_output=1;;
   ?) printf "Usage: %s: [-e] [-v version] [-d date] [path/to/package]\n" $0 >> /dev/stderr
      exit 2;;
   esac
