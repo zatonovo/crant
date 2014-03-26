@@ -7,7 +7,7 @@ version=
 builddate_default=$(date +%F)
 upgrade_version=
 R=R
-export=export
+export=$(mktemp -d --tmpdir crant.XXXXXXXXXXXX)
 sed=sed
 readlink=readlink
 
@@ -37,12 +37,12 @@ check_fatal()
 
 do_build()
 {
-  $R CMD build $binary $vignettes $package
+  $R CMD build $binary $vignettes --compact-vignettes=gs+qpdf $package
   check_fatal "R CMD build failed"
   if [ -z "$nocheck" ]
   then
     $R CMD check $vignettes $package_src
-    check_fatal "R CMD check failed"
+    check_fatal "R CMD check failed. See $export"
     if [ -n "$copy_output" ]
     then
       mkdir -p "$package_dir/Examples" && cp "$package.Rcheck/$package-Ex.Rout" "$package_dir/Examples/$package-Ex.Rout.save"
@@ -52,19 +52,19 @@ do_build()
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 5 "R CMD check returned $t"
+        fatal 5 "R CMD check returned $t. See $export"
       fi
     done
   fi
   if [ -n "$docran" ]
   then
     $R CMD check $vignettes --as-cran $package_src
-    check_fatal "R CMD check --as-cran failed"
+    check_fatal "R CMD check --as-cran failed. See $export"
     for t in WARNING
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 6 "R CMD check --as-cran returned $t"
+        fatal 6 "R CMD check --as-cran returned $t. See $export"
       fi
     done
   fi
@@ -181,6 +181,21 @@ do_bind_package()
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
   do_roxygenize --no-commit
+
+  if [ "$version" != "$old_version" ]; then
+    ch_files="NEWS NEWS.md ChangeLog"
+    for file in $ch_files; do
+      if [ -e "$file".tmpl ]; then
+        (
+          sed 's/$VERSION/'$version'/g;s/$BUILDDATE/'$builddate'/g' "$file".tmpl
+          cat "$file"
+        ) > "$file".tmp
+        mv "$file".tmp "$file"
+        git add "$file"
+        $files=$files" $file"
+      fi
+    done
+  fi
   commit "Bump version to $version" $files
 }
 
@@ -212,24 +227,24 @@ do_upgrade_version()
     $sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
   vz=($(echo -n "${v[*]}" | $sed -r "s/[0-9]+/0/g"))
   case $pos in
-  1) echo $((${v[0]} + 1))${vz[1]}${vz[2]}${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
-  2) echo ${v[0]}${v[1]}$((${v[2]} + 1))${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
+  1) echo $((${v[0]} + 1))${vz[1]}${vz[2]};;
+  2) echo ${v[0]}${v[1]}$((${v[2]} + 1));;
   3) if [ -n "${v[4]}" ]; then
-       echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1))${vz[5]}${vz[6]};
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1));
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}.1;
      fi;;
   4) if [ -n "${v[6]}" ]; then
        echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}${v[5]}$((${v[6]} + 1));
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}.1;
      fi;;
   *) echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;;
   esac
 }
 
 set_sed
-while getopts "v:VMd:R:DCrSsitebwh:xXu:o?" opt
+while getopts "v:VMd:R:DCrSsiItebwh:xXu:o?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -243,6 +258,7 @@ do
   s) noautocommit=1;;
   S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
+  I) docopy=1;;
   t) tests='--install-tests';;
   e) doexport=1;;
   b) binary="--binary";; # For windows
@@ -272,6 +288,8 @@ check_fatal "Error reading package name"
 
 check_clean_wc
 
+old_version=$(get_current_version)
+
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
   check_fatal "Error upgrading version"
@@ -298,6 +316,8 @@ check_fatal "Error binding package"
 
 cd ..
 
+printf "Output directory: %s\n" $export >> /dev/stderr
+
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package >> /dev/stderr
 [ -n "$doexport" ] && printf "Running export on %s\n" $package >> /dev/stderr
 
@@ -311,16 +331,16 @@ then
 fi
 
 do_repo_export
-check_fatal "Error exporting repository"
+check_fatal "Error exporting repository to $export"
 
 if [ -z "$doexport" ]
 then
   do_build
-  check_fatal "Error building"
+  check_fatal "Error building. See $export"
 elif [ -n "$doexport" ]
 then
   do_export
-  check_fatal "Error exporting"
+  check_fatal "Error exporting. See $export"
 fi
 
 cd -
@@ -330,6 +350,13 @@ then
   echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $tests $export/$package_src
   check_fatal "Error installing"
+fi
+
+if [ -n "$docopy" ]
+then
+  echo "Copying package $package to $package_dirname" >> /dev/stderr
+  cp -f $export/$package_src $package_dirname
+  check_fatal "Error copying"
 fi
 
 echo "Done with package $package" >> /dev/stderr
