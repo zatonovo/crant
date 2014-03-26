@@ -7,7 +7,7 @@ version=
 builddate_default=$(date +%F)
 upgrade_version=
 R=R
-export=export
+export=$(mktemp -d --tmpdir crant.XXXXXXXXXXXX)
 sed=sed
 readlink=readlink
 
@@ -42,24 +42,24 @@ do_build()
   if [ -z "$nocheck" ]
   then
     $R CMD check $vignettes $package_src
-    check_fatal "R CMD check failed"
+    check_fatal "R CMD check failed. See $export"
     for t in WARNING NOTE
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 5 "R CMD check returned $t"
+        fatal 5 "R CMD check returned $t. See $export"
       fi
     done
   fi
   if [ -n "$docran" ]
   then
     $R CMD check $vignettes --as-cran $package_src
-    check_fatal "R CMD check --as-cran failed"
+    check_fatal "R CMD check --as-cran failed. See $export"
     for t in WARNING
     do
       if egrep ^$t "$package.Rcheck/00check.log"
       then
-        fatal 6 "R CMD check --as-cran returned $t"
+        fatal 6 "R CMD check --as-cran returned $t. See $export"
       fi
     done
   fi
@@ -224,7 +224,7 @@ do_upgrade_version()
 }
 
 set_sed
-while getopts "v:VMd:R:DCrSsitebwh:xXu:?" opt
+while getopts "v:VMd:R:DCrSsiItebwh:xXu:?" opt
 do
   case $opt in
   v) version=$OPTARG;;
@@ -238,6 +238,7 @@ do
   s) noautocommit=1;;
   S) noscm=1; noautocommit=1;;
   i) doinstall=1;;
+  I) docopy=1;;
   t) tests='--install-tests';;
   e) doexport=1;;
   b) binary="--binary";; # For windows
@@ -292,6 +293,8 @@ check_fatal "Error binding package"
 
 cd ..
 
+printf "Output directory: %s\n" $export >> /dev/stderr
+
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package >> /dev/stderr
 [ -n "$doexport" ] && printf "Running export on %s\n" $package >> /dev/stderr
 
@@ -305,16 +308,16 @@ then
 fi
 
 do_repo_export
-check_fatal "Error exporting repository"
+check_fatal "Error exporting repository to $export"
 
 if [ -z "$doexport" ]
 then
   do_build
-  check_fatal "Error building"
+  check_fatal "Error building. See $export"
 elif [ -n "$doexport" ]
 then
   do_export
-  check_fatal "Error exporting"
+  check_fatal "Error exporting. See $export"
 fi
 
 cd -
@@ -324,6 +327,13 @@ then
   echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $tests $export/$package_src
   check_fatal "Error installing"
+fi
+
+if [ -n "$docopy" ]
+then
+  echo "Copying package $package to $package_dirname" >> /dev/stderr
+  cp -f $export/$package_src $package_dirname
+  check_fatal "Error copying"
 fi
 
 echo "Done with package $package" >> /dev/stderr
