@@ -62,6 +62,9 @@ before.
 
 Note that rant will automatically update the version and date in the
 `DESCRIPTION`, `man/*-package.Rd` and `R/*-package.R` files for you.
+In addition, for the files `NEWS`, `NEWS.md` and `ChangeLog`, if a corresponding
+file with the extension `.tmpl` exists, its contents are prepended to the file
+(placeholders `$VERSION` and `$BUILDDATE` are substituted).
 
 ### Other Options
 

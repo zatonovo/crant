@@ -176,6 +176,21 @@ do_bind_package()
     s/(Date: ([\\]tab |))([0-9-]+|\{date\})/\1$builddate/
   " $files 2>/dev/null
   do_roxygenize --no-commit
+
+  if [ "$version" != "$old_version" ]; then
+    ch_files="NEWS NEWS.md ChangeLog"
+    for file in $ch_files; do
+      if [ -e "$file".tmpl ]; then
+        (
+          sed 's/$VERSION/'$version'/g;s/$BUILDDATE/'$builddate'/g' "$file".tmpl
+          cat "$file"
+        ) > "$file".tmp
+        mv "$file".tmp "$file"
+        git add "$file"
+        $files=$files" $file"
+      fi
+    done
+  fi
   commit "Bump version to $version" $files
 }
 
@@ -207,17 +222,17 @@ do_upgrade_version()
     $sed -r "s/([0-9]+)([-.])([0-9]+)($|([-.])([0-9]+)($|([-.])([0-9]+)))/\1 \2 \3 \5 \6 \8 \9/"))
   vz=($(echo -n "${v[*]}" | $sed -r "s/[0-9]+/0/g"))
   case $pos in
-  1) echo $((${v[0]} + 1))${vz[1]}${vz[2]}${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
-  2) echo ${v[0]}${v[1]}$((${v[2]} + 1))${vz[3]}${vz[4]}${vz[5]}${vz[6]};;
+  1) echo $((${v[0]} + 1))${vz[1]}${vz[2]};;
+  2) echo ${v[0]}${v[1]}$((${v[2]} + 1));;
   3) if [ -n "${v[4]}" ]; then
-       echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1))${vz[5]}${vz[6]};
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}$((${v[4]} + 1));
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}.1;
      fi;;
   4) if [ -n "${v[6]}" ]; then
        echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}${v[5]}$((${v[6]} + 1));
      else
-       echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;
+       echo ${v[0]}${v[1]}${v[2]}${v[3]}${v[4]}.1;
      fi;;
   *) echo "Warning: Invalid parameter $pos to -u switch" > /dev/stderr;;
   esac
@@ -266,6 +281,8 @@ package=$(read_package_name)
 check_fatal "Error reading package name"
 
 check_clean_wc
+
+old_version=$(get_current_version)
 
 if [ -n "$upgrade_version" ]; then
   version=$(do_upgrade_version $upgrade_version)
