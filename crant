@@ -45,7 +45,7 @@ do_build()
     check_fatal "R CMD check failed. See $export"
     if [ -n "$copy_output" ]
     then
-      mkdir -p "$package_dir/Examples" && cp "$package.Rcheck/$package-Ex.Rout" "$package_dir/Examples/$package-Ex.Rout.save"
+      mkdir -p "$package_dir/tests/Examples" && cp "$package.Rcheck/$package-Ex.Rout" "$package_dir/tests/Examples/$package-Ex.Rout.save"
       check_fatal "Copying output failed"
     fi
     for t in WARNING NOTE
