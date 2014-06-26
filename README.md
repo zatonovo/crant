@@ -44,12 +44,12 @@ set the path to the R executable.
 
 Building your package
 ---------------------
-The rant script will build and check your package. If your source is within a
-source repository, rant will attempt to export the latest committed version
+The crant script will build and check your package. If your source is within a
+source repository, crant will attempt to export the latest committed version
 to a separate directory (export). The only required variable is the package
 name, although typically you will also want to provide the version number.
 
-    rant -v 1.0.0 your.package
+    crant -v 1.0.0 your.package
 
 To ignore the repository version and pull the latest working copy use the `-S`
 option.
@@ -58,9 +58,9 @@ If testing your package just before uploading to CRAN, it is wise to test
 against the three versions of R you built before. Use the same `-R` option as
 before.
 
-    rant -v 1.0.0 -R path/to/R your.package
+    crant -v 1.0.0 -R path/to/R your.package
 
-Note that rant will automatically update the version and date in the
+Note that crant will automatically update the version and date in the
 `DESCRIPTION`, `man/*-package.Rd` and `R/*-package.R` files for you.
 In addition, for the files `NEWS`, `NEWS.md` and `ChangeLog`, if a corresponding
 file with the extension `.tmpl` exists, its contents are prepended to the file
@@ -93,7 +93,7 @@ Mac OS X Notes
 Since Mac OS X comes from a BSD lineage, the versions of base utility
 commands have different syntax. This causes a lot of problems. The
 workaround is to install ```coreutils```, which installs the GNU 
-variants of all the commands. The rant script detects a Darwin platform
+variants of all the commands. The crant script detects a Darwin platform
 and will substitute the ```g``` variants for the standard commands.
 
 
