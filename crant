@@ -198,7 +198,7 @@ do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package >> /dev/stderr
-    echo "library(roxygen2); roxygenize('.')" | $R --vanilla
+    echo "library(roxygen2); roxygenize('.')" | $R --no-save --no-restore
     check_fatal "Error executing roxygenize"
     [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
   fi
