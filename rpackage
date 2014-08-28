@@ -65,15 +65,15 @@ function get_suffix() {
 
 
 set_toolchain
-dependencies=FALSE
+dependencies=TRUE
 install_opts=NULL
-while getopts "r:tR:" opt
+while getopts "cr:tDR:" opt
 do
   case $opt in
   c) cleanup=yes;;
   r) repo=$OPTARG;;
   t) install_opts='--install-tests';;
-  d) dependencies=TRUE;;
+  D) dependencies=FALSE;;
   R) R=$OPTARG;;
   esac
 done
