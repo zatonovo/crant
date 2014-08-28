@@ -88,6 +88,9 @@ shift $(($OPTIND - 1))
 
 for pkg in $*
 do
+  comment=$(echo "$pkg" | grep '^#')
+  [ -n "$comment" ] && continue
+
   echo "Installing $pkg"
   package=$(get_package $pkg)
   suffix=$(get_suffix $pkg)
