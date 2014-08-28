@@ -1,0 +1,83 @@
+#!/bin/bash
+# Set up R libraries
+# Example:
+#   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
+R=R
+repo=http://cran.mirrors.hoobly.com
+
+set_toolchain()
+{
+  platform=$(uname -s)
+  if [ "$platform" = "Darwin" ]
+  then
+    echo "NOTE: Using GNU coreutils on Darwin"
+    sed=gsed
+    readlink=greadlink
+  else
+    sed=sed
+    readlink=readlink
+  fi
+}
+
+function install_package() {
+  pkg=$1
+  ${R}script --vanilla \
+    -e "install.packages('$pkg', repos='$repo', dependencies=$dependencies, INSTALL_opts=$install_opts)"
+}
+
+function install_source() {
+  package=$1
+  url=$2
+  suffix=$(echo $url | $sed -r 's|.*/.*[.]([a-zA-Z0-9]+)|\1|')
+  case $suffix in
+    zip)
+      curl -LO "$url"
+      branch=$(echo $url | $sed -r 's|.*/(.*)[.][a-zA-Z0-9]+|\1|')
+      unzip $branch.zip
+      cd ${package}-${branch}
+      crant -Ci;;
+    git)
+      git clone $url $package
+      cd $package
+      crant -Ci;;
+    *) echo "File of type $suffix is not supported. Sorry.";;
+  esac
+}
+
+function get_package() {
+  name=$(echo $1 | $sed -r 's|.*github.com/([^/]+)/([^/]+)/archive/(.*)[.][a-zA-Z0-9]+$|\2|')
+  [ "$name" = "$1" ] && name=$(echo $1 | $sed -r 's|.*/(.*)[.][a-zA-Z0-9]+|\1|')
+  echo $name
+}
+
+function get_suffix() {
+  suffix=$(echo $1 | $sed -r 's/.*[.]([a-zA-Z0-9]+)$/\1/')
+  [ "$suffix" = "$1" ] && suffix=''
+  echo $suffix
+}
+
+dependencies=FALSE
+install_opts=NULL
+while getopts "r:tR:" opt
+do
+  case $opt in
+  r) repo=$OPTARG;;
+  t) install_opts='--install-tests';;
+  d) dependencies=TRUE;;
+  R) R=$OPTARG;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+for pkg in $*
+do
+  echo "Installing $pkg"
+  package=$(get_package $pkg)
+  suffix=$(get_suffix $pkg)
+  case $suffix in
+    zip) install_source $package $pkg;;
+    git) install_source $package $pkg;;
+    *) install_package $pkg;;
+  esac
+done
+
