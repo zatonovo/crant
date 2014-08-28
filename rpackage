@@ -28,6 +28,13 @@ function install_package() {
     -e "install.packages('$pkg', repos='$repo', dependencies=$dependencies, INSTALL_opts=$install_opts)"
 }
 
+function install_local() {
+  package=$(echo $1 | $sed -r 's/.tar$//')
+  url=$2
+  curl -LO "$url"
+  ${R} CMD INSTALL $package.tar.gz
+}
+
 function install_source() {
   package=$1
   url=$2
@@ -87,6 +94,7 @@ do
   case $suffix in
     zip) install_source $package $pkg;;
     git) install_source $package $pkg;;
+    gz) install_local $package $pkg;;
     *) install_package $pkg;;
   esac
 done
