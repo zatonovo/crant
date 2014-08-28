@@ -35,11 +35,14 @@ function install_source() {
       branch=$(echo $url | $sed -r 's|.*/(.*)[.][a-zA-Z0-9]+|\1|')
       unzip $branch.zip
       cd ${package}-${branch}
-      crant -Ci;;
+      crant -Ci
+      rm $branch.zip
+      rm -rf ${package}-${branch};;
     git)
       git clone $url $package
       cd $package
-      crant -Ci;;
+      crant -Ci
+      rm -rf $package;;
     *) echo "File of type $suffix is not supported. Sorry.";;
   esac
 }
