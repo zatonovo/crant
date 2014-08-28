@@ -17,6 +17,9 @@ set_toolchain()
     sed=sed
     readlink=readlink
   fi
+
+  unzip=$(which unzip)
+  [ -z "$unzip" ] && unzip='jar xf'
 }
 
 function install_package() {
@@ -33,7 +36,7 @@ function install_source() {
     zip)
       curl -LO "$url"
       branch=$(echo $url | $sed -r 's|.*/(.*)[.][a-zA-Z0-9]+|\1|')
-      unzip $branch.zip
+      $unzip $branch.zip
       cd ${package}-${branch}
       crant -Ci
       rm $branch.zip
