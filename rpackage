@@ -39,13 +39,13 @@ function install_source() {
       $unzip $branch.zip
       cd ${package}-${branch}
       crant -Ci
-      rm $branch.zip
-      rm -rf ${package}-${branch};;
+      [ -n "$cleanup" ] && rm $branch.zip
+      [ -n "$cleanup" ] && rm -rf ${package}-${branch};;
     git)
       git clone $url $package
       cd $package
       crant -Ci
-      rm -rf $package;;
+      [ -n "$cleanup" ] && rm -rf $package;;
     *) echo "File of type $suffix is not supported. Sorry.";;
   esac
 }
@@ -70,6 +70,7 @@ install_opts=NULL
 while getopts "r:tR:" opt
 do
   case $opt in
+  c) cleanup=yes;;
   r) repo=$OPTARG;;
   t) install_opts='--install-tests';;
   d) dependencies=TRUE;;
