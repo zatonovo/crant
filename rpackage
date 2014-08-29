@@ -63,7 +63,7 @@ function install_perl() {
   curl -LO "$url"
   tar zxf $package.tar.gz
   cd $package
-  perl Makefile.PL --prefix=$perl_lib
+  perl Makefile.PL PREFIX=$perl_lib
   make
   make install
 }
