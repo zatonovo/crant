@@ -39,7 +39,6 @@ function install_source() {
   package=$1
   url=$2
   suffix=$(echo $url | $sed -r 's|.*/.*[.]([a-zA-Z0-9]+)|\1|')
-  set -x
   case $suffix in
     zip)
       curl -LO "$url"
@@ -56,8 +55,19 @@ function install_source() {
       [ -n "$cleanup" ] && rm -rf $package;;
     *) echo "File of type $suffix is not supported. Sorry.";;
   esac
-  set +x
 }
+
+function install_perl() {
+  package=$(echo $1 | $sed -r 's/.tar$//')
+  url=$2
+  curl -LO "$url"
+  tar zxf $package.tar.gz
+  cd $package
+  perl Makefile.PL --prefix=$perl_lib
+  make
+  make install
+}
+
 
 function get_package() {
   name=$(echo $1 | $sed -r 's|.*github.com/([^/]+)/([^/]+)/archive/(.*)[.][a-zA-Z0-9]+$|\2|')
@@ -76,7 +86,7 @@ function get_suffix() {
 set_toolchain
 dependencies=TRUE
 install_opts=NULL
-while getopts "cr:tDR:" opt
+while getopts "cr:tDR:p:" opt
 do
   case $opt in
   c) cleanup=yes;;
@@ -84,6 +94,7 @@ do
   t) install_opts='--install-tests';;
   D) dependencies=FALSE;;
   R) R=$OPTARG;;
+  p) perl_lib=$OPTARG;;
   esac
 done
 shift $(($OPTIND - 1))
@@ -96,10 +107,13 @@ do
   echo "Installing $pkg"
   package=$(get_package $pkg)
   suffix=$(get_suffix $pkg)
+  [ -n "$perl_lib" ] && suffix=perl
+
   case $suffix in
     zip) install_source $package $pkg;;
     git) install_source $package $pkg;;
     gz) install_local $package $pkg;;
+    perl) install_perl $package $pkg;;
     *) install_package $pkg;;
   esac
 done
