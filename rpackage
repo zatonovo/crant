@@ -58,7 +58,6 @@ function install_source() {
 }
 
 function install_perl() {
-  set -x
   package=$(echo $1 | $sed -r 's/.tar$//')
   url=$2
   curl -LO "$url"
@@ -67,8 +66,6 @@ function install_perl() {
   perl Makefile.PL PREFIX=$perl_lib
   make
   make install
-  set +x
-  echo "0"
 }
 
 
