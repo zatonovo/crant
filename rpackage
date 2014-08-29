@@ -39,6 +39,7 @@ function install_source() {
   package=$1
   url=$2
   suffix=$(echo $url | $sed -r 's|.*/.*[.]([a-zA-Z0-9]+)|\1|')
+  set -x
   case $suffix in
     zip)
       curl -LO "$url"
@@ -55,6 +56,7 @@ function install_source() {
       [ -n "$cleanup" ] && rm -rf $package;;
     *) echo "File of type $suffix is not supported. Sorry.";;
   esac
+  set +x
 }
 
 function get_package() {
