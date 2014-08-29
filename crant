@@ -356,3 +356,4 @@ then
 fi
 
 echo "Done with package $package" >> /dev/stderr
+exit 0
