@@ -38,6 +38,7 @@ function install_local() {
 function install_source() {
   package=$1
   url=$2
+  echo "PERL5LIB: $PERL5LIB"
   suffix=$(echo $url | $sed -r 's|.*/.*[.]([a-zA-Z0-9]+)|\1|')
   case $suffix in
     zip)

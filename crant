@@ -343,6 +343,7 @@ cd -
 
 if [ -n "$doinstall" ]
 then
+  echo "PERL5LIB: $PERL5LIB"
   echo "Installing package $package" >> /dev/stderr
   $R CMD INSTALL $tests $export/$package_src
   check_fatal "Error installing"
