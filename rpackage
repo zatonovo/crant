@@ -3,7 +3,7 @@
 # Example:
 #   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
 R=R
-repo=http://cran.mirrors.hoobly.com
+repo=http://cran.revolutionanalytics.com
 
 set_toolchain()
 {
