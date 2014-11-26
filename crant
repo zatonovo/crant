@@ -7,11 +7,8 @@ version=
 builddate_default=$(date +%F)
 upgrade_version=
 R=R
-export=$(mktemp -d --tmpdir crant.XXXXXXXXXXXX)
-sed=sed
-readlink=readlink
 
-set_sed()
+set_toolchain()
 {
   platform=$(uname -s)
   if [ "$platform" = "Darwin" ]
@@ -19,6 +16,11 @@ set_sed()
     echo "NOTE: Using GNU coreutils on Darwin"
     sed=gsed
     readlink=greadlink
+    export=$(mktemp -d -t crant)
+  else
+    sed=sed
+    readlink=readlink
+    export=$(mktemp -d --tmpdir crant.XXXXXXXXXXXX)
   fi
 }
 
@@ -198,7 +200,7 @@ do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package >> /dev/stderr
-    echo "library(roxygen2); roxygenize('.', clean = TRUE)" | $R --vanilla
+    echo "library(roxygen2); roxygenize('.', clean = TRUE)" | $R --no-save --no-restore
     check_fatal "Error executing roxygenize"
     [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
   fi
@@ -238,7 +240,7 @@ do_upgrade_version()
   esac
 }
 
-set_sed
+set_toolchain
 while getopts "v:VMd:R:DCrSsiItebwh:xXu:?" opt
 do
   case $opt in
@@ -310,8 +312,6 @@ check_fatal "Error binding package"
 
 cd ..
 
-printf "Output directory: %s\n" $export >> /dev/stderr
-
 [ -z "$doexport" ] && printf "Running build chain on %s\n" $package >> /dev/stderr
 [ -n "$doexport" ] && printf "Running export on %s\n" $package >> /dev/stderr
 
@@ -354,3 +354,4 @@ then
 fi
 
 echo "Done with package $package" >> /dev/stderr
+exit 0
