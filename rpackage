@@ -85,15 +85,15 @@ function get_suffix() {
 
 
 set_toolchain
-dependencies=TRUE
+dependencies=NA
 install_opts=NULL
-while getopts "cr:tDR:p:" opt
+while getopts "cr:tdR:p:" opt
 do
   case $opt in
   c) cleanup=yes;;
   r) repo=$OPTARG;;
   t) install_opts='--install-tests';;
-  D) dependencies=FALSE;;
+  d) dependencies=TRUE;;
   R) R=$OPTARG;;
   p) perl_lib=$OPTARG;;
   esac
