@@ -17,6 +17,7 @@ set_toolchain()
     sed=gsed
     readlink=greadlink
     export=$(mktemp -d -t crant)
+    [ "$?" -eq "1" ] && export=$(mktemp -d --tmpdir crant.XXXXXXXXXXXX)
   else
     sed=sed
     readlink=readlink
