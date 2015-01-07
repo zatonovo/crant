@@ -66,13 +66,15 @@ after building.
 
 ### ROxygen
 If your documentation is inline with ROxygen, use the `-x` or `-X` options.
+(These options require the `roxygen2` and `devtools` packages.)
 The lower case `crant -SCix` variant will build the source along with the 
 documentation, while the upper case variant `crant -X` will halt the process. 
 This is useful if you need to test formatting. Once documentation is generated,
 it is more efficient to not regenerate it on subsequent builds.
 
 NOTE: If you use the `-x` or `-X` option on a project that does not use
-ROxygen, your `man` directory will become corrupted.
+ROxygen, your `man` directory might become corrupted. ROxygen takes care to avoid
+this, though.
 
 ### Version Numbers
 Crant will automatically increment version numbers or you can specify it
