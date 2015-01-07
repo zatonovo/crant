@@ -189,7 +189,7 @@ do_bind_package()
         ) > "$file".tmp
         mv "$file".tmp "$file"
         git add "$file"
-        $files=$files" $file"
+        files=$files" $file"
       fi
     done
   fi
