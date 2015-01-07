@@ -200,9 +200,9 @@ do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package >> /dev/stderr
-    echo "library(roxygen2); roxygenize('.', clean = TRUE)" | $R --no-save --no-restore
-    check_fatal "Error executing roxygenize"
-    [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
+    $R --no-save --no-restore -e "devtools::document()"
+    check_fatal "Error executing devtools::document"
+    [ -z "$1" ] && commit "Update documentation" man DESCRIPTION NAMESPACE
   fi
 }
 
