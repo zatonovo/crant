@@ -166,7 +166,7 @@ commit()
     svn commit -m "$message" $@
   elif [ -d .git ]
   then
-    git add $@ && git commit -m "$message"
+    git add -A $@ && git commit -m "$message"
   fi
 }
 
@@ -194,7 +194,7 @@ do_bind_package()
         ) > "$file".tmp
         mv "$file".tmp "$file"
         git add "$file"
-        $files=$files" $file"
+        files=$files" $file"
       fi
     done
   fi
@@ -205,9 +205,9 @@ do_roxygenize()
 {
   if [ -n "$roxygen" ]; then
     printf "Roxygenizing %s\n" $package >> /dev/stderr
-    echo "library(roxygen2); roxygenize('.')" | $R --no-save --no-restore
-    check_fatal "Error executing roxygenize"
-    [ -z "$1" ] && commit "Roxygenize" man DESCRIPTION NAMESPACE
+    $R --no-save --no-restore -e "devtools::document()"
+    check_fatal "Error executing devtools::document"
+    [ -z "$1" ] && commit "Update documentation" man DESCRIPTION NAMESPACE
   fi
 }
 
