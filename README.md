@@ -1,12 +1,15 @@
 crant
 =====
-The crant toolkit is designed to streamline the package development process.
+The `crant` toolkit is designed to streamline the package development process.
+Unlike `devtools`, `crant` is designed to be used on the command line and by
+system processes.
 
 
 Workflow
 ========
-
-Build R, set up package libraries, build your own packages.
+`crant` offers more than package development, providing utilities that span
+the process of creating multiple working instances of R, to installing
+packages from various sources, and building your own packages.
 
 Build R
 -------
@@ -50,10 +53,10 @@ installations (e.g. devel, patch, release) in your environment.
 
 Building your package
 ---------------------
-The crant script will build and check your package. If your source is within a
-source repository, crant will attempt to export the latest committed version
-to a separate directory (export). If you are in a source directory, crant doesn't
-require any options.
+The `crant` script will build and check your package. If your source is within
+a source repository, crant will attempt to export the latest committed version
+to a separate directory (export). If you are in a source directory, crant 
+doesn't require any options. The no option call will build and check a package.
 
     crant 
 
@@ -61,8 +64,15 @@ In active development, you might want to use these options:
 
     crant -SCi
 
-which uses the local modified source code, skips checks, and installs the package
-after building.
+which uses the local modified source code, skips checks, and installs the 
+package after building.
+
+When preparing for a release, consider 
+
+    crant -u 3
+
+which automatically increments the release version number. Use `-u 2` to
+increment the minor version number.
 
 ### ROxygen
 If your documentation is inline with ROxygen, use the `-x` or `-X` options.
@@ -77,8 +87,13 @@ ROxygen, your `man` directory might become corrupted. ROxygen takes care to avoi
 this, though.
 
 ### Version Numbers
-Crant will automatically increment version numbers or you can specify it
-manually.
+Crant will automatically increment version numbers by using the `-u` switch.
+The argument to `-u` specifies the version number position. Many packages have
+a three segment version number denoted major.minor.release. To increment the
+minor version number, use `-u 2`. Similarly, to increment the release version
+number, `-u 3` should be used.
+
+Version numbers can also be set manually with the `-v` option.
 
     crant -v 1.0.0 
 
