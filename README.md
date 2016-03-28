@@ -126,6 +126,7 @@ file with the extension `.tmpl` exists, its contents are prepended to the file
 + `-d DATE` - Specify build date
 + `-x` - Roxygenize
 + `-X` - Roxygenize and exit
++ `-o` - Copy output of example runs back to package source
 + `-R /path/to/R` - Use specific R interpreter
 + `-b` - Build binary package
 + `-h HOSTNAME` - Build binary package on Windows host `HOSTNAME`
