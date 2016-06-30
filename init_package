@@ -1,0 +1,170 @@
+#!/bin/bash
+# If you already have most of a package and want test harnesses, 
+# ignore files, etc, then just run init_package in the 
+# root of the package directory.
+
+date=$(date +%Y-%m-%d)
+package=$(echo ${PWD##/*/} | tr '_' '.')
+testlib=testit
+title='~~TITLE~~'
+description='~~DESCRIPTION~~'
+import=$(grep 'library\|require' R/*.R R/.*.R | tr -d '")' | awk -F '(' '{print $2}')
+author='AUTHOR <AUTHOR@DOMAIN.COM>'
+
+
+setup_directories() {
+  for dir in R man tests
+  do
+    [ ! -d "$dir" ] && mkdir -p $dir
+  done
+}
+
+setup_testthat() {
+  [ -f 'tests/test-all.R' ] && return
+  echo "Set up test harness"
+  mkdir -p tests/testit
+  cat > tests/test-all.R <<EOM
+library(testit)
+test_pkg('$package')
+EOM
+
+  cat > tests/testit/example.R <<EOM
+# See https://github.com/yihui/testit
+assert('Tautology is true', TRUE, TRUE)
+EOM
+}
+
+setup_description() {
+  [ -f 'DESCRIPTION' ] && return
+  echo "Create DESCRIPTION file"
+  local import_str="$(echo $import | tr ' ' '\n' | sed '$ ! s/$/,/' | sed 's/^/  /')"
+  cat > DESCRIPTION <<EOM
+Package: $package
+Type: Package
+Title: $title
+Version: 1.0.0
+Date: $date
+Author: $author
+Maintainer: $author
+Imports:
+$import_str
+Suggests:
+  $testlib
+Description: $description
+License: LGPL-3
+LazyLoad: yes
+Collate:
+EOM
+  ls R/*.R | tr ' ' '\n' | awk -F/ '{print $2}' | sed 's/^/  /' >> DESCRIPTION
+}
+
+setup_namespace() {
+  [ -f 'NAMESPACE' ] && return
+  echo "Create NAMESPACE file"
+  local import_str=$(echo $import | tr ' ' '\n' | sed -e 's/^/import(/' -e 's/$/)/')
+  cat > NAMESPACE <<EOM
+exportPattern("^[^\\\\.]")
+$import_str
+EOM
+}
+
+setup_package_rd() {
+  [  -f "R/$package-package.R" ] && return 
+  echo "Create package descriptor R/$package-package.R"
+  local import_str=$(echo $import | tr '\n' ' ')
+  local author_str=$(echo $author | sed 's/@/@@/')
+  cat > R/$package-package.R <<EOM
+# :vim set filetype=R
+#' $title
+#'
+#' $description
+#'
+#' \tabular{ll}{
+#' Package: \tab ${package}\cr
+#' Type: \tab Package\cr
+#' Version: \tab 1.0.0\cr
+#' Date: \tab ${date}\cr
+#' License: \tab LGPL-3\cr
+#' LazyLoad: \tab yes\cr
+#' }
+#'
+#' @name $package-package
+#' @aliases $package-package $package
+#' @docType package
+#' @exportPattern \"^[^\\.]\"
+#' @import $import_str
+#' @author $author_str
+#' @keywords package
+## @seealso \code{\link{other.package}}
+NULL 
+EOM
+}
+
+setup_r_ignore() {
+  [ -f ".Rbuildignore" ] && return
+  echo "Create .Rbuildignore"
+  cat > .Rbuildignore <<EOM
+^.*\.Rproj$
+^\.Rproj\.user$
+^rename$
+^\.gitignore$
+^README.md$
+^LICENSE$
+^tools$
+^.travis.yml$
+.init.R
+.swp$
+EOM
+}
+
+setup_git_ignore() {
+  [ -f ".gitignore" ] && return
+  echo "Create .gitignore"
+  cat > .gitignore <<EOM
+# History files
+.Rhistory
+.RData
+
+# Example code in package build process
+*-Ex.R
+
+# Other
+*.swp
+*~
+EOM
+}
+
+setup_travis() {
+  [ -f ".travis.yml" ] && return
+  echo "Create Travis CI build script"
+  cat > .travis.yml <<EOM
+language: r
+r:
+  - release
+  - oldrel
+  - devel
+#r_github_packages:
+#  - user/repo
+EOM
+}
+
+while getopts "a:t:d:" opt
+do
+  case $opt in
+  a) author="$OPTARG";;
+  t) title="$OPTARG";;
+  d) description="$OPTARG";;
+  esac
+done
+
+setup_directories
+setup_r_ignore
+setup_git_ignore
+setup_package_rd
+setup_description
+setup_namespace
+setup_testthat
+setup_travis
+
+echo "To complete initialization be sure to complete R/$package-package.R"
+echo "Then commit and run crant -x to generate documentation, test, and build"
