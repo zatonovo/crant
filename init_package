@@ -91,7 +91,7 @@ setup_package_rd() {
 #' @name $package-package
 #' @aliases $package-package $package
 #' @docType package
-#' @exportPattern \"^[^\\.]\"
+#' @exportPattern "^[^\\\\.]"
 #' @import $import_str
 #' @author $author_str
 #' @keywords package
