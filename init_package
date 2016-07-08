@@ -28,7 +28,7 @@ library(testit)
 test_pkg('$package')
 EOM
 
-  cat > tests/testit/example.R <<EOM
+  cat > tests/testit/test-example.R <<EOM
 # See https://github.com/yihui/testit
 assert('Tautology is true', TRUE, TRUE)
 EOM
