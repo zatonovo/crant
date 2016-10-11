@@ -8,9 +8,15 @@ package=$(echo ${PWD##/*/} | tr '_' '.')
 testlib=testit
 title='~~TITLE~~'
 description='~~DESCRIPTION~~'
-import=$(grep 'library\|require' R/*.R R/.*.R | tr -d '")' | awk -F '(' '{print $2}')
+import=$(grep 'library\|require' R/*.R R/.*.R | tr -d '")' | awk -F '(' '{print $2}') 2> /dev/null
 author='AUTHOR <AUTHOR@DOMAIN.COM>'
 
+do_help() {
+  echo <<EOT
+USAGE: init_package -a 'AUTHOR <AUTHOR@DOMAIN.COM>' -t TITLE -d DESCRIPTION
+EOT
+  exit 0
+}
 
 setup_directories() {
   for dir in R man tests
@@ -148,12 +154,13 @@ r:
 EOM
 }
 
-while getopts "a:t:d:" opt
+while getopts "a:t:d:h?" opt
 do
   case $opt in
   a) author="$OPTARG";;
   t) title="$OPTARG";;
   d) description="$OPTARG";;
+  h|?) do_help;;
   esac
 done
 
