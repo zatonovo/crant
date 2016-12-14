@@ -47,13 +47,13 @@ function install_source() {
       $unzip $branch.zip
       cd ${package}-${branch}
       crant -Ci
-      [ -z "$cleanup" ] && rm $branch.zip
-      [ -z "$cleanup" ] && rm -rf ${package}-${branch};;
+      [ -n "$cleanup" ] && cd - && rm $branch.zip
+      [ -n "$cleanup" ] && cd - && rm -rf ${package}-${branch};;
     git)
       git clone $url $package
       cd $package
       crant -Ci
-      [ -z "$cleanup" ] && rm -rf $package;;
+      [ -n "$cleanup" ] && cd - && rm -rf $package;;
     *) echo "File of type $suffix is not supported. Sorry.";;
   esac
 }
@@ -87,10 +87,11 @@ function get_suffix() {
 set_toolchain
 dependencies=NA
 install_opts=NULL
+cleanup=yes
 while getopts "cr:tdR:p:" opt
 do
   case $opt in
-  C) cleanup=no;;
+  C) cleanup=;;
   r) repo=$OPTARG;;
   t) install_opts='--install-tests';;
   d) dependencies=TRUE;;
