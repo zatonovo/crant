@@ -2,6 +2,7 @@
 # Set up R libraries
 # Example:
 #   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
+
 R=R
 repo=http://cran.revolutionanalytics.com
 
@@ -25,7 +26,9 @@ set_toolchain()
 function install_package() {
   pkg=$1
   ${R}script --vanilla \
-    -e "install.packages('$pkg', repos='$repo', dependencies=$dependencies, INSTALL_opts=$install_opts)"
+    -e "withCallingHandlers(install.packages('$pkg', repos='$repo', \
+    dependencies=$dependencies, INSTALL_opts=$install_opts), \
+    warning=function(w) stop(w))"
 }
 
 function install_local() {
@@ -101,6 +104,7 @@ do
 done
 shift $(($OPTIND - 1))
 
+exit_code=0
 for pkg in $*
 do
   comment=$(echo "$pkg" | grep '^#')
@@ -118,6 +122,8 @@ do
     perl) install_perl $package $pkg;;
     *) install_package $pkg;;
   esac
+  e=$?
+  [[ $e -ne 0 ]] && exit_code=$e
 done
 
-exit 0
+exit $exit_code
