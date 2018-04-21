@@ -8,12 +8,14 @@ package=$(echo ${PWD##/*/} | tr '_' '.')
 testlib=testit
 title='~~TITLE~~'
 description='~~DESCRIPTION~~'
-import=$(grep 'library\|require' R/*.R R/.*.R | tr -d '")' | awk -F '(' '{print $2}') 2> /dev/null
 author='AUTHOR <AUTHOR@DOMAIN.COM>'
 
 do_help() {
-  echo <<EOT
-USAGE: init_package -a 'AUTHOR <AUTHOR@DOMAIN.COM>' -t TITLE -d DESCRIPTION
+  cat <<EOT
+Initialize an R package based on existing scripts in R/*.R. The package name 
+is inferred from the current working directory.
+
+USAGE: init_package [-a '$author'] [-t TITLE] [-d DESCRIPTION]
 EOT
   exit 0
 }
@@ -25,7 +27,7 @@ setup_directories() {
   done
 }
 
-setup_testthat() {
+setup_testing() {
   [ -f 'tests/test-all.R' ] && return
   echo "Set up test harness"
   mkdir -p tests/testit
@@ -120,6 +122,8 @@ setup_r_ignore() {
 ^.travis.yml$
 .init.R
 .swp$
+^private$
+^notebooks$
 EOM
 }
 
@@ -130,6 +134,7 @@ setup_git_ignore() {
 # History files
 .Rhistory
 .RData
+private
 
 # Example code in package build process
 *-Ex.R
@@ -154,6 +159,13 @@ r:
 EOM
 }
 
+setup_docker() {
+  crant_dir=$(which crant | xargs dirname)
+  cp $crant_dir/templates/Dockerfile .
+  cp $crant_dir/templates/Makefile .
+  sed -i -e "s/PACKAGE/$package/" Dockerfile
+}
+
 while getopts "a:t:d:h?" opt
 do
   case $opt in
@@ -164,14 +176,17 @@ do
   esac
 done
 
+import=$(grep -s 'library\|require' R/*.R R/.*.R | tr -d '")' | awk -F '(' '{print $2}')
 setup_directories
 setup_r_ignore
 setup_git_ignore
 setup_package_rd
 setup_description
 setup_namespace
-setup_testthat
+setup_testing
 setup_travis
+setup_docker
 
 echo "To complete initialization be sure to complete R/$package-package.R"
+echo "and possibly DESCRIPTION (if you didn't provide title, author, etc.)."
 echo "Then commit and run crant -x to generate documentation, test, and build"
