@@ -37,6 +37,7 @@ EXPOSE 8004
 RUN apt-get install -y git
 RUN git clone https://github.com/muxspace/crant.git /app/crant
 ENV PATH="$PATH:/app/crant"
+
 RUN rpackage futile.logger futile.matrix
 RUN rpackage formatR
 RUN rpackage https://github.com/zatonovo/lambda.r.git
