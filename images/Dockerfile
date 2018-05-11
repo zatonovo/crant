@@ -1,4 +1,4 @@
-FROM jupyter/r-notebook
+FROM jupyter/minimal-notebook
 MAINTAINER rowe@zatonovo.com
 
 USER root
@@ -37,11 +37,15 @@ EXPOSE 8004
 RUN apt-get install -y git
 RUN git clone https://github.com/muxspace/crant.git /app/crant
 ENV PATH="$PATH:/app/crant"
-
-RUN rpackage futile.logger futile.matrix 
+RUN rpackage futile.logger futile.matrix
 RUN rpackage formatR
 RUN rpackage https://github.com/zatonovo/lambda.r.git
 RUN rpackage https://github.com/zatonovo/lambda.tools.git
+
+# For R jupyter notebook
+RUN rpackage repr IRdisplay pbdZMQ uuid
+RUN rpackage https://github.com/IRkernel/IRkernel.git
+RUN Rscript -e "IRkernel::installspec()"
 
 RUN mkdir /app/cache
 
