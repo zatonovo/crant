@@ -17,12 +17,12 @@ all:
 run: all
 	docker run -d -p 8004:8004 ${MOUNT_HOSTDIR} ${REPOSITORY}
 
-notebook:
-	docker run -it --rm -p 8888:8888 ${REPOSITORY} start-notebook.sh
-
 stop:
 	docker stop ${CONTAINER_ID}
 
 bash:
 	docker exec -it ${CONTAINER_ID} bash
 
+jupyter: all
+	@mkdir -p notebooks
+	docker run -it -p 8888:8888 ${MOUNT_HOSTDIR} -w /app/${PACKAGE}/notebooks ${REPOSITORY} jupyter notebook --allow-root

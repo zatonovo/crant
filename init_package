@@ -112,6 +112,8 @@ setup_r_ignore() {
   [ -f ".Rbuildignore" ] && return
   echo "Create .Rbuildignore"
   cat > .Rbuildignore <<EOM
+Dockerfile
+Makefile
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^rename$
