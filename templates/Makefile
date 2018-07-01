@@ -23,6 +23,6 @@ stop:
 bash:
 	docker exec -it ${CONTAINER_ID} bash
 
-jupyter: all
+notebook: all
 	@mkdir -p notebooks
 	docker run -it -p 8888:8888 ${MOUNT_HOSTDIR} -w /app/${PACKAGE}/notebooks ${REPOSITORY} jupyter notebook --allow-root
