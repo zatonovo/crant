@@ -126,6 +126,8 @@ Makefile
 .swp$
 ^private$
 ^notebooks$
+^reports$
+^shiny$
 EOM
 }
 
@@ -140,6 +142,9 @@ private
 
 # Example code in package build process
 *-Ex.R
+
+# Notebooks
+notebooks/.ipynb_checkpoints
 
 # Other
 *.swp
