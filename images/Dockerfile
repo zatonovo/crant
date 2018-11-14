@@ -11,10 +11,10 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN \
   apt-get update && \
   #apt-get -y dist-upgrade && \
-  apt-get install -y software-properties-common && \
-  add-apt-repository -y ppa:opencpu/opencpu-2.0 && \
+  apt-get install -qy software-properties-common && \
+  add-apt-repository -qy ppa:opencpu/opencpu-2.0 && \
   apt-get update && \
-  apt-get install -y opencpu-server
+  apt-get install -qy opencpu-server x11-apps
 
 # Prints apache logs to stdout
 RUN \
@@ -38,15 +38,16 @@ RUN apt-get install -y git
 RUN git clone https://github.com/muxspace/crant.git /app/crant
 ENV PATH="$PATH:/app/crant"
 
-RUN rpackage futile.logger futile.matrix
-RUN rpackage formatR
-RUN rpackage https://github.com/zatonovo/lambda.r.git
-RUN rpackage https://github.com/zatonovo/lambda.tools.git
+RUN rpackage futile.logger futile.matrix \
+  testit roxygen2 devtools reticulate formatR \
+  https://github.com/zatonovo/lambda.r.git \
+  https://github.com/zatonovo/lambda.tools.git 
 
 # For R jupyter notebook
-RUN rpackage repr IRdisplay pbdZMQ uuid
-RUN rpackage https://github.com/IRkernel/IRkernel.git
+RUN rpackage repr IRdisplay pbdZMQ uuid \
+  https://github.com/IRkernel/IRkernel.git
 RUN Rscript -e "IRkernel::installspec()"
+RUN pip install numpy pandas scikit-learn
 
 RUN mkdir /app/cache
 

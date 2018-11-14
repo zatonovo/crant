@@ -1,6 +1,6 @@
 PACKAGE = dummy
 REPOSITORY ?= zatonovo/r-base
-VERSION ?= 1.0.0
+VERSION ?= 1.0.1
 IMAGE ?= $(REPOSITORY):$(VERSION)
 PORT ?= 8004
 
