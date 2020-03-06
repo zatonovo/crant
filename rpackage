@@ -4,10 +4,9 @@
 #   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
 
 R=R
-repo=http://cran.revolutionanalytics.com
+repo=https://cloud.r-project.org/
 
-set_toolchain()
-{
+set_toolchain() {
   platform=$(uname -s)
   if [ "$platform" = "Darwin" ]
   then
@@ -23,7 +22,7 @@ set_toolchain()
   [ -z "$unzip" ] && unzip='jar xf'
 }
 
-function install_package() {
+install_package() {
   pkg=$1
   ${R}script --vanilla \
     -e "withCallingHandlers(install.packages('$pkg', repos='$repo', \
@@ -31,14 +30,14 @@ function install_package() {
     warning=function(w) stop(w))"
 }
 
-function install_local() {
+install_local() {
   package=$(echo $1 | $sed -r 's/.tar$//')
   url=$2
   curl -LO "$url"
   ${R} CMD INSTALL $package.tar.gz
 }
 
-function install_source() {
+install_source() {
   package=$1
   url=$2
   echo "PERL5LIB: $PERL5LIB"
@@ -61,7 +60,7 @@ function install_source() {
   esac
 }
 
-function install_perl() {
+install_perl() {
   package=$(echo $1 | $sed -r 's/.tar$//')
   url=$2
   curl -LO "$url"
@@ -73,13 +72,13 @@ function install_perl() {
 }
 
 
-function get_package() {
+get_package() {
   name=$(echo $1 | $sed -r 's|.*github.com/([^/]+)/([^/]+)/archive/(.*)[.][a-zA-Z0-9]+$|\2|')
   [ "$name" = "$1" ] && name=$(echo $1 | $sed -r 's|.*/(.*)[.][a-zA-Z0-9]+|\1|')
   echo $name
 }
 
-function get_suffix() {
+get_suffix() {
   suffix=$(echo $1 | $sed -r 's/.*[.]([a-zA-Z0-9]+)$/\1/')
   [ "$suffix" = "$1" ] && suffix=''
   echo $suffix
