@@ -39,7 +39,7 @@ r:
 
 notebook: all
 	@mkdir -p notebooks
-	docker run -it -p 8888:8888 $(MOUNT_HOSTDIR) -u jovyan -w /app/$(PACKAGE)/notebooks $(REPOSITORY) jupyter notebook --allow-root
+	docker run -it -p 8888:8888 $(MOUNT_HOSTDIR) -w /app/$(PACKAGE)/notebooks $(REPOSITORY) jupyter notebook --allow-root
 
 shiny:
 	R --vanilla -e "library(shiny); shiny::runApp('shiny')"
