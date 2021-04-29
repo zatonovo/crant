@@ -22,7 +22,8 @@ all:
 
 # Open http://localhost:8004/ocpu/library/$(PACKAGE)
 run: all
-	crant -SCi
+	# Local build is unnecessary
+	#crant -SCi
 	docker run -d -p $(PORT):8004 $(XMOUNT) $(MOUNT_HOSTDIR) $(REPOSITORY)
 
 run-isolated: all
