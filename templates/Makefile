@@ -6,7 +6,7 @@ PORT ?= 8004
 VARS ?=
 
 ifdef DISPLAY
-	XAUTH := /home/$(shell who | awk '{print $$1}')/.Xauthority
+	XAUTH := /home/$(shell whoami)/.Xauthority
 	XVARS := --network=host -e DISPLAY=$(DISPLAY) -v $(XAUTH):/root/.Xauthority
 endif
 
@@ -16,7 +16,7 @@ MOUNT_HOSTDIR := -v $(HOST_DIR):/app/$(PACKAGE)
 CONTAINER_ID = $(shell docker ps | grep '$(REPOSITORY)' | awk '{print $$1}')
 
 .PHONY: all run test clean
-all:
+build:
 	docker build -t $(IMAGE) .
 	docker tag $(IMAGE) $(REPOSITORY):latest
 
@@ -35,8 +35,11 @@ stop:
 bash:
 	docker exec $(VARS) -it -u jovyan $(CONTAINER_ID) bash
 
+bash_:
+	docker run $(VARS) --rm -it $(XVARS) -u jovyan $(REPOSITORY) bash
+
 r:
-	docker run $(VARS) -it $(XVARS) -u jovyan $(REPOSITORY) R
+	docker run $(VARS) --rm -it $(XVARS) -u jovyan $(REPOSITORY) R
 
 notebook: all
 	@mkdir -p notebooks
