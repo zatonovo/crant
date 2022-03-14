@@ -36,10 +36,10 @@ bash:
 	docker exec $(VARS) -it -u jovyan $(CONTAINER_ID) bash
 
 bash_:
-	docker run $(VARS) --rm -it $(XVARS) -u jovyan $(REPOSITORY) bash
+	docker run $(VARS) --rm -it $(XVARS) $(MOUNT_HOSTDIR) -u jovyan $(REPOSITORY) bash
 
 r:
-	docker run $(VARS) --rm -it $(XVARS) -u jovyan $(REPOSITORY) R
+	docker run $(VARS) --rm -it $(XVARS) $(MOUNT_HOSTDIR) -u jovyan $(REPOSITORY) R
 
 notebook: all
 	@mkdir -p notebooks
