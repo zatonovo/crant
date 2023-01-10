@@ -12,7 +12,7 @@ RUN \
   apt-get update && \
   #apt-get -y dist-upgrade && \
   apt-get install -qy software-properties-common && \
-  add-apt-repository -y ppa:opencpu/opencpu-2.1 && \
+  add-apt-repository -y ppa:opencpu/opencpu-2.2 && \
   apt-get update && \
   apt-get install -qy opencpu-server x11-apps
 
