@@ -172,7 +172,7 @@ setup_docker() {
   crant_dir=$(which crant | xargs dirname)
   cp $crant_dir/templates/Dockerfile .
   cp $crant_dir/templates/Makefile .
-  sed -i .tmp -e "s/PACKAGE/$package/" Dockerfile
+  sed -i.tmp -e "s/PACKAGE/$package/" Dockerfile
   rm Dockerfile.tmp
 }
 
