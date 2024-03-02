@@ -4,7 +4,7 @@
 #   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
 
 R=R
-repo='c("https://ropensci.r-universe.dev","https://cloud.r-project.org/")'
+repo="https://cloud.r-project.org/"
 
 set_toolchain() {
   platform=$(uname -s)
@@ -90,7 +90,7 @@ set_toolchain
 dependencies=NA
 install_opts=NULL
 cleanup=yes
-while getopts "cr:tdR:p:" opt
+while getopts "Cr:tdR:p:" opt
 do
   case $opt in
   C) cleanup=;;
