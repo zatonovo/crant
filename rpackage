@@ -4,7 +4,7 @@
 #   setuplib.sh -R ~/devel/bin/R RUnit testthat parser
 
 R=R
-repo=https://cloud.r-project.org/
+repo='c("https://ropensci.r-universe.dev","https://cloud.r-project.org/")'
 
 set_toolchain() {
   platform=$(uname -s)
